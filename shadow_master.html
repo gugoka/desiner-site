@@ -788,6 +788,15 @@
       }
     }
 
+
+
+    /* Full graphics must stay full on mobile when eco-mode is OFF. */
+    @media (max-width: 860px){
+      body:not(.eco-mode){
+        animation:gradientMove 18s ease-in-out infinite !important;
+        background-size:260% 260% !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -922,11 +931,11 @@
   <div class="modal-backdrop" id="modalBackdrop" role="presentation">
     <section class="modal" role="dialog" aria-modal="true" aria-labelledby="rulesTitle" aria-describedby="rulesText">
       <button class="close-modal" id="closeModal" type="button" aria-label="Закрыть правила">×</button>
-      <h2 id="rulesTitle">Правила игры</h2>
+      <h2 id="rulesTitle">Правила игры: Мастер Теней</h2>
       <div id="rulesText">
         <p>Ваша цель — повторить эталонную тень на карточке справа с помощью восьми ползунков.</p>
-        <p>Тень состоит из двух слоёв. «Рассеянное свечение» создаёт широкую мягкую глубину, а «Чёткое ядро» отвечает за близкую контактную тень.</p>
-        <p>Во время настройки игра не показывает процент точности и не раскрывает числовой ответ. Нажмите «Проверить результат», чтобы увидеть итоговую оценку.</p>
+        <p>Тень состоит из двух слоёв: «Рассеянное свечение» создаёт широкую мягкую глубину, а «Чёткое ядро» отвечает за близкую контактную тень.</p>
+        <p>Во время настройки игра не показывает процент точности и не раскрывает числовой ответ. Нажмите «Проверить результат», чтобы увидеть итоговую оценку в системном уведомлении.</p>
       </div>
       <button class="primary-btn" id="startBtn" type="button">Понятно, начать</button>
     </section>
@@ -1184,5 +1193,5 @@
       window.setTimeout(openModal, 260);
     })();
   </script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1572d273aa6e192',t:'MTc4MzA5NTE5NA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>

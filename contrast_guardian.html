@@ -225,24 +225,56 @@
       z-index:2;
     }
     .text-capsule{
+      --capsule-backdrop: blur(0px) saturate(160%);
+      --capsule-bg: rgba(255,255,255,.05);
+      --capsule-color: rgb(13,17,30);
+      --capsule-weight: 300;
+      position:relative;
+      isolation:isolate;
       border-radius:30px;
       padding:28px 32px;
       border:1px solid rgba(255,255,255,.34);
+      background:transparent !important;
+      color:var(--capsule-color);
+      font-weight:var(--capsule-weight);
+      backdrop-filter:none !important;
+      -webkit-backdrop-filter:none !important;
       box-shadow: 0 24px 70px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.28);
-      transition: background .1s linear, backdrop-filter .1s linear, color .1s linear, font-weight .1s linear;
+      transition: color .1s linear, font-weight .1s linear;
       overflow:hidden;
     }
+    .text-capsule::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      z-index:0;
+      border-radius:inherit;
+      pointer-events:none;
+      background:var(--capsule-bg);
+      backdrop-filter:var(--capsule-backdrop);
+      -webkit-backdrop-filter:var(--capsule-backdrop);
+    }
     .text-capsule h2{
+      position:relative;
+      z-index:1;
       margin:0 0 10px;
       font-size:clamp(24px, 4.4vw, 48px);
       line-height:.98;
       letter-spacing: normal !important;
+      font-weight:inherit;
+      -webkit-font-smoothing:antialiased;
+      text-rendering:geometricPrecision;
     }
     .text-capsule p{
+      position:relative;
+      z-index:1;
       margin:0;
       font-size:clamp(16px, 1.9vw, 19px);
       line-height:1.48;
       letter-spacing: normal !important;
+      font-weight:inherit;
+      -webkit-font-smoothing:antialiased;
+      text-rendering:geometricPrecision;
     }
     .stage-caption{
       position:absolute;
@@ -721,6 +753,36 @@
       }
     }
 
+
+
+    /* Contrast Guardian mobile fixes: prevent sticky toolbar smear; keep glass in full mode. */
+    @media (max-width: 860px){
+      .topbar{
+        position:relative !important;
+        top:auto !important;
+        transform:none !important;
+      }
+      body.eco-mode .topbar{
+        background:rgba(255,255,255,.92) !important;
+        backdrop-filter:none !important;
+        -webkit-backdrop-filter:none !important;
+      }
+      body.eco-mode .text-capsule{
+        transform:none !important;
+      }
+      body.eco-mode .text-capsule::before{
+        filter:none !important;
+      }
+    }
+
+
+    /* Full graphics must stay full on mobile when eco-mode is OFF. */
+    @media (max-width: 860px){
+      body:not(.eco-mode){
+        animation:gradientShift 18s ease-in-out infinite !important;
+        background-size:260% 260% !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -1031,11 +1093,10 @@
         const tint = tintIsBlack ? '0,0,0' : '255,255,255';
         const text = tintIsBlack ? '255,255,255' : '13,17,30';
 
-        els.capsule.style.backdropFilter = `blur(${blur}px) saturate(160%)`;
-        els.capsule.style.webkitBackdropFilter = `blur(${blur}px) saturate(160%)`;
-        els.capsule.style.background = `rgba(${tint}, ${opacity})`;
-        els.capsule.style.color = `rgb(${text})`;
-        els.capsule.style.fontWeight = String(weight);
+        els.capsule.style.setProperty('--capsule-backdrop', `blur(${blur}px) saturate(160%)`);
+        els.capsule.style.setProperty('--capsule-bg', `rgba(${tint}, ${opacity})`);
+        els.capsule.style.setProperty('--capsule-color', `rgb(${text})`);
+        els.capsule.style.setProperty('--capsule-weight', String(weight));
 
         els.blurValue.textContent = `${blur} px`;
         els.opacityValue.textContent = opacity.toFixed(2);
@@ -1232,5 +1293,5 @@
       window.setTimeout(openModal, 260);
     })();
   </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a156d1946e81ed62',t:'MTc4MzA5MTQ0Mw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1572d417e65e192',t:'MTc4MzA5NTE5OA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
