@@ -1,0 +1,1066 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Shadow Master — Мастер Теней</title>
+  <style>
+    :root{
+      /* ---- Glass material (single source of truth, used everywhere) ---- */
+      --glass-blur: 25px;
+      --glass-bg: rgba(255,255,255,.45);
+      --glass-border: rgba(255,255,255,.6);
+      --glass-border-strong: rgba(255,255,255,.72);
+
+      --ink: #101423;
+      --muted: rgba(16,20,35,.68);
+      --accent: #245cff;
+      --accent-2:#8a39ff;
+      --pink:#e34cb5;
+      --ok:#0a8f5a;
+      --warn:#a96a00;
+      --bad:#b42318;
+      --shadow: 0 24px 70px rgba(26, 31, 64, .22);
+      --shadow-soft: 0 10px 34px rgba(26, 31, 64, .15);
+      --radius: 24px;
+
+      --font-heading: "Segoe UI", "Arial", sans-serif;
+      --font-body: "Segoe UI", "Arial", sans-serif;
+
+      /* Типографическая шкала как в Contrast Guardian */
+      --fs-2xs: 0.75rem;
+      --fs-xs: 0.8125rem;
+      --fs-sm: 0.875rem;
+      --fs-base: 1rem;
+      --fs-md: 1.125rem;
+      --fs-lg: 1.25rem;
+      --lh-tight: 1.2;
+      --lh-normal: 1.5;
+      --lh-relaxed: 1.6;
+    }
+
+    *{ box-sizing:border-box; }
+    html{ font-size:16px; }
+    html, body{ min-height:100%; }
+    body{
+      margin:0;
+      color:var(--ink);
+      font-family: var(--font-body);
+      font-size:var(--fs-base);
+      font-weight:400;
+      line-height:var(--lh-normal);
+      letter-spacing:normal;
+      overflow-x:hidden;
+      background: linear-gradient(125deg, #075cff 0%, #7561ff 33%, #d36fff 67%, #ff8fc9 100%);
+      background-size:260% 260%;
+      animation: gradientMove 18s ease-in-out infinite;
+    }
+    body::before{
+      content:"";
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      background:
+        radial-gradient(circle at 16% 18%, rgba(255,255,255,.34), transparent 28%),
+        radial-gradient(circle at 86% 12%, rgba(255,255,255,.18), transparent 25%),
+        radial-gradient(circle at 50% 92%, rgba(255,255,255,.22), transparent 30%);
+      mix-blend-mode: screen;
+    }
+    @keyframes gradientMove{
+      0%,100%{ background-position:0% 45%; }
+      50%{ background-position:100% 55%; }
+    }
+    @keyframes fadeInUp{
+      from{ opacity:0; transform:translate3d(0,24px,0) scale(.985); filter:blur(8px); }
+      to{ opacity:1; transform:translate3d(0,0,0) scale(1); filter:blur(0); }
+    }
+    @keyframes toastIn{
+      from{ opacity:0; transform:translate(-50%,18px) scale(.96); }
+      to{ opacity:1; transform:translate(-50%,0) scale(1); }
+    }
+    @keyframes cardPulse{
+      0%,100%{ transform:translateY(0); }
+      50%{ transform:translateY(-3px); }
+    }
+
+    h1, h2, h3, .panel-title, .modal h2{
+      font-family: var(--font-heading) !important;
+      letter-spacing: normal !important;
+      font-weight: 500 !important;
+      line-height: var(--lh-tight);
+      margin:0;
+    }
+
+    p, label, .label-row, .value-badge, .hint-list li, .panel-copy,
+    .stage-head p, .hero p, .decor-pill, .toast p, .modal p, .layer-title span:last-child{
+      font-family: var(--font-body) !important;
+      letter-spacing: normal !important;
+      font-weight: 400 !important;
+      line-height: var(--lh-normal);
+    }
+
+    .app{
+      width:min(1220px, calc(100% - 28px));
+      margin:0 auto;
+      padding:18px 0 28px;
+      position:relative;
+      z-index:1;
+    }
+
+    .topbar{
+      position:sticky;
+      top:12px;
+      z-index:20;
+      display:grid;
+      grid-template-columns:1fr auto 1fr;
+      align-items:center;
+      gap:12px;
+      padding:10px;
+      margin-bottom:18px;
+      border:1px solid var(--glass-border);
+      border-radius:999px;
+      background:var(--glass-bg);
+      backdrop-filter:blur(var(--glass-blur));
+      -webkit-backdrop-filter:blur(var(--glass-blur));
+      box-shadow:var(--shadow-soft);
+      animation:fadeInUp .82s cubic-bezier(.16,1,.3,1) both;
+    }
+    .nav-left{ justify-self:start; min-width:0; }
+    .nav-right{ justify-self:end; min-width:0; }
+    .pill-btn, .level-pill{
+      border:1px solid var(--glass-border);
+      border-radius:999px;
+      background:var(--glass-bg);
+      color:var(--ink);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.58), 0 8px 22px rgba(28,36,80,.12);
+      backdrop-filter:blur(var(--glass-blur));
+      -webkit-backdrop-filter:blur(var(--glass-blur));
+      text-decoration:none;
+      font-family: var(--font-body) !important;
+      font-weight: 500 !important;
+      letter-spacing: normal !important;
+      white-space:nowrap;
+      transition:transform .22s ease, background .22s ease, box-shadow .22s ease;
+    }
+    .pill-btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:42px;
+      padding:0 18px;
+      cursor:pointer;
+      font-size:var(--fs-sm);
+      appearance:none;
+    }
+    .pill-btn:hover{ transform:translateY(-1px); background:rgba(255,255,255,.62); box-shadow:0 14px 28px rgba(28,36,80,.16); }
+    .pill-btn:active{ transform:translateY(0) scale(.98); }
+    .level-pill{ padding:10px 20px; font-size:var(--fs-base); background:rgba(255,255,255,.58); text-align:center; }
+
+    .hero{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:20px;
+      margin:0 4px 18px;
+      animation:fadeInUp .86s .06s cubic-bezier(.16,1,.3,1) both;
+    }
+    .hero h1{
+      color:rgba(255,255,255,.94);
+      font-size:clamp(34px, 6vw, 76px);
+      line-height:.92;
+      letter-spacing:-0.02em !important;
+      font-weight:800 !important;
+      text-shadow:0 12px 44px rgba(28,28,70,.24);
+    }
+    .hero p{
+      max-width:470px;
+      margin:0 0 6px;
+      color:rgba(255,255,255,.86);
+      font-size:clamp(1rem, 2vw, 1.125rem);
+      line-height:var(--lh-relaxed);
+      font-family:var(--font-body) !important;
+      font-weight:500 !important;
+      letter-spacing:normal !important;
+      text-shadow:0 8px 26px rgba(20,20,55,.24);
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:minmax(0, 1.35fr) minmax(330px, .65fr);
+      gap:18px;
+      align-items:start;
+    }
+    .main-column{
+      display:grid;
+      gap:14px;
+      align-items:start;
+    }
+    .bento{
+      border:1px solid var(--glass-border);
+      border-radius:var(--radius);
+      background:var(--glass-bg);
+      backdrop-filter:blur(var(--glass-blur));
+      -webkit-backdrop-filter:blur(var(--glass-blur));
+      box-shadow:var(--shadow);
+      overflow:hidden;
+      animation:fadeInUp .9s cubic-bezier(.16,1,.3,1) both;
+    }
+    .arena{
+      padding:18px;
+      animation-delay:.14s;
+      display:grid;
+      grid-template-rows:auto 1fr;
+      gap:14px;
+      min-height:650px;
+    }
+    .side{ display:grid; gap:14px; }
+    .side .bento, .check-panel{ padding:18px; }
+    .side .bento:nth-child(1){ animation-delay:.22s; }
+    .side .bento:nth-child(2){ animation-delay:.30s; }
+    .side .bento:nth-child(3){ animation-delay:.38s; }
+
+    .stage-head{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      flex-wrap:wrap;
+      gap:14px;
+      padding:2px 4px 0;
+    }
+    .stage-head h2{ font-size:var(--fs-lg); line-height:var(--lh-tight); font-weight:500 !important; letter-spacing:normal !important; }
+    .stage-head p{ margin:5px 0 0; color:var(--muted); font-size:var(--fs-sm); line-height:var(--lh-relaxed); }
+    .decor-pill{
+      max-width:100%;
+      padding:9px 13px;
+      border-radius:999px;
+      color:rgba(29,29,31,.72);
+      font-size:var(--fs-2xs);
+      background:var(--glass-bg);
+      border:1px solid var(--glass-border);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.55);
+      white-space:normal;
+      text-align:center;
+    }
+    .canvas-grid{
+      display:grid;
+      grid-template-columns:repeat(2, minmax(0, 1fr));
+      gap:14px;
+      align-items:stretch;
+    }
+
+    .white-canvas{
+      background:#ffffff;
+      border-radius:20px;
+      min-height:510px;
+      position:relative;
+      overflow:hidden;
+      display:grid;
+      grid-template-rows:auto 1fr;
+      box-shadow:inset 0 0 0 1px rgba(0,0,0,.06), 0 22px 55px rgba(18,25,64,.14);
+    }
+    .canvas-label{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:16px 18px 12px;
+      color:var(--ink);
+      font-family: var(--font-body);
+      font-weight:500;
+      letter-spacing:normal;
+      line-height:var(--lh-tight);
+      font-size:var(--fs-md);
+      position:relative;
+      z-index:2;
+    }
+    .card-zone{
+      display:grid;
+      place-items:center;
+      padding:28px;
+      position:relative;
+    }
+    .card-zone::before{
+      content:"";
+      position:absolute;
+      inset:24px;
+      border-radius:18px;
+      background:
+        linear-gradient(rgba(29,29,31,.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(29,29,31,.035) 1px, transparent 1px);
+      background-size:26px 26px;
+      pointer-events:none;
+    }
+    .shadow-card{
+      width:min(210px, 70%);
+      aspect-ratio:1;
+      position:relative;
+      z-index:1;
+      border-radius:34px;
+      background:linear-gradient(145deg, #ffffff 0%, #f5f7ff 56%, #eef2ff 100%);
+      border:1px solid rgba(12,20,45,.08);
+      display:grid;
+      place-items:center;
+      color:#1d1d1f;
+      font-family: var(--font-body);
+      font-weight:800;
+      letter-spacing:-.06em;
+      font-size:clamp(34px, 5vw, 54px);
+      user-select:none;
+      transition:box-shadow .12s linear, transform .24s ease;
+    }
+    .shadow-card::after{
+      content:"";
+      position:absolute;
+      inset:16px;
+      border-radius:24px;
+      background:linear-gradient(135deg, rgba(36,92,255,.10), rgba(227,76,181,.10));
+      pointer-events:none;
+    }
+    .shadow-card .mark{ position:relative; z-index:1; text-align:center; line-height:.86; }
+    .target-card{ animation:cardPulse 5s ease-in-out infinite; }
+
+    .panel-title{
+      margin:0 0 4px;
+      font-size:var(--fs-lg);
+      line-height:var(--lh-tight);
+      font-family:var(--font-body) !important;
+      font-weight:500 !important;
+      letter-spacing:normal !important;
+    }
+    .panel-copy{
+      margin:0 0 16px;
+      color:var(--muted);
+      line-height:var(--lh-relaxed);
+      font-size:var(--fs-base);
+      font-family:var(--font-body) !important;
+      font-weight:400 !important;
+      letter-spacing:normal !important;
+    }
+    .layer-box{
+      border-radius:22px;
+      padding:15px;
+      background:var(--glass-bg);
+      border:1px solid var(--glass-border);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.46);
+    }
+    .layer-box + .layer-box{ margin-top:12px; }
+    .layer-title{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin:0 0 12px;
+      font-size:var(--fs-sm);
+    }
+    .layer-title span:last-child{
+      color:rgba(29,29,31,.55);
+      font-size:var(--fs-2xs) !important;
+      letter-spacing:0.01em !important;
+      font-weight:500 !important;
+      text-transform:uppercase;
+    }
+    .control{ margin-top:13px; }
+    .control:first-of-type{ margin-top:0; }
+    .label-row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:10px;
+      font-family:var(--font-body) !important;
+      font-weight:500 !important;
+      letter-spacing:normal !important;
+      font-size:var(--fs-sm);
+    }
+    .label-row label{ font-weight:500 !important; }
+    .value-badge{
+      min-width:64px;
+      text-align:center;
+      padding:5px 9px;
+      border-radius:999px;
+      background:rgba(255,255,255,.50);
+      border:1px solid rgba(255,255,255,.55);
+      color:rgba(16,20,35,.78);
+      font-size:var(--fs-2xs);
+      font-family:var(--font-body) !important;
+      font-weight:400 !important;
+      letter-spacing:normal !important;
+      font-variant-numeric:tabular-nums;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.45);
+    }
+    input[type="range"]{
+      width:100%;
+      height:28px;
+      margin:0;
+      appearance:none;
+      -webkit-appearance:none;
+      background:transparent;
+      cursor:pointer;
+    }
+    input[type="range"]::-webkit-slider-runnable-track{
+      height:12px;
+      border-radius:999px;
+      background:rgba(0,0,0,.16);
+      box-shadow: inset 0 1px 3px rgba(0,0,0,.12), 0 1px 0 rgba(255,255,255,.5);
+    }
+    input[type="range"]::-moz-range-track{
+      height:12px;
+      border-radius:999px;
+      background:rgba(0,0,0,.16);
+      box-shadow: inset 0 1px 3px rgba(0,0,0,.12), 0 1px 0 rgba(255,255,255,.5);
+    }
+    input[type="range"]::-webkit-slider-thumb{
+      -webkit-appearance:none;
+      width:34px;
+      height:22px;
+      margin-top:-5px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.82);
+      background:linear-gradient(180deg, #fff, #f5f7ff);
+      box-shadow:0 7px 16px rgba(10,20,60,.24), inset 0 -1px 0 rgba(0,0,0,.06);
+    }
+    input[type="range"]::-moz-range-thumb{
+      width:34px;
+      height:22px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.82);
+      background:linear-gradient(180deg, #fff, #f5f7ff);
+      box-shadow:0 7px 16px rgba(10,20,60,.24), inset 0 -1px 0 rgba(0,0,0,.06);
+    }
+
+    .action-stack{ display:grid; gap:10px; }
+    .primary-btn, .secondary-btn{
+      width:100%;
+      border:0;
+      border-radius:18px;
+      min-height:52px;
+      padding:0 18px;
+      font-family: var(--font-body) !important;
+      font-weight: 500 !important;
+      letter-spacing: normal !important;
+      cursor:pointer;
+      transition:transform .22s ease, box-shadow .22s ease, opacity .22s ease, filter .22s ease;
+    }
+    .primary-btn{
+      color:white;
+      background:linear-gradient(135deg, #0b43ff, #8a39ff 52%, #e34cb5);
+      box-shadow:0 16px 32px rgba(53,62,180,.28), inset 0 1px 0 rgba(255,255,255,.28);
+    }
+    .secondary-btn{
+      color:var(--ink);
+      background:rgba(255,255,255,.48);
+      border:1px solid var(--glass-border);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.55), 0 10px 22px rgba(28,36,80,.10);
+    }
+    .primary-btn:hover, .secondary-btn:hover{ transform:translateY(-1px); filter:saturate(1.08); }
+    .primary-btn:active, .secondary-btn:active{ transform:scale(.985); }
+    .secondary-btn:disabled{ opacity:.44; cursor:not-allowed; transform:none; }
+    .hint-list{ display:grid; gap:10px; padding:0; margin:14px 0 0; list-style:none; }
+    .hint-list li{
+      display:flex;
+      gap:9px;
+      align-items:flex-start;
+      color:rgba(16,20,35,.70);
+      font-size:var(--fs-sm);
+      line-height:var(--lh-relaxed);
+      font-family:var(--font-body) !important;
+      font-weight:400 !important;
+      letter-spacing:normal !important;
+    }
+    .dot{ width:8px; height:8px; border-radius:50%; margin-top:5px; background:rgba(36,92,255,.85); box-shadow:0 0 0 5px rgba(36,92,255,.12); flex:0 0 auto; }
+
+    .modal-backdrop{
+      position:fixed;
+      inset:0;
+      z-index:100;
+      display:grid;
+      place-items:center;
+      padding:22px;
+      background:rgba(22,25,54,.20);
+      backdrop-filter:blur(18px) saturate(130%);
+      -webkit-backdrop-filter:blur(18px) saturate(130%);
+      opacity:0;
+      visibility:hidden;
+      pointer-events:none;
+      transition:opacity .34s cubic-bezier(.16,1,.3,1), visibility 0s linear .34s;
+    }
+    .modal-backdrop.active{
+      opacity:1;
+      visibility:visible;
+      pointer-events:auto;
+      transition-delay:0s;
+    }
+    .modal{
+      width:min(590px, 100%);
+      position:relative;
+      border-radius:24px;
+      padding:30px;
+      border:1px solid var(--glass-border-strong);
+      background:var(--glass-bg);
+      backdrop-filter:blur(var(--glass-blur));
+      -webkit-backdrop-filter:blur(var(--glass-blur));
+      box-shadow:0 36px 100px rgba(20,25,70,.30), inset 0 1px 0 rgba(255,255,255,.65);
+      opacity:0;
+      transform:translate3d(0,24px,0) scale(.985);
+      filter:blur(8px);
+      transition:
+        opacity .46s cubic-bezier(.16,1,.3,1),
+        transform .46s cubic-bezier(.16,1,.3,1),
+        filter .46s cubic-bezier(.16,1,.3,1);
+    }
+    .modal-backdrop.active .modal{
+      opacity:1;
+      transform:translate3d(0,0,0) scale(1);
+      filter:blur(0);
+    }
+    .close-modal{
+      position:absolute;
+      top:14px;
+      right:14px;
+      width:38px;
+      height:38px;
+      border:1px solid var(--glass-border-strong);
+      border-radius:50%;
+      background:var(--glass-bg);
+      color:rgba(29,29,31,.78);
+      font-size:20px;
+      line-height:1;
+      cursor:pointer;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.55);
+    }
+    .modal h2{
+      margin:0 44px 12px 0;
+      font-size:clamp(1.5rem, 4vw, 2.25rem);
+      line-height:var(--lh-tight);
+      font-family:var(--font-body) !important;
+      font-weight:500 !important;
+      letter-spacing:normal !important;
+    }
+    .modal p{
+      margin:0 0 12px;
+      color:rgba(16,20,35,.72);
+      font-size:var(--fs-base);
+      line-height:var(--lh-relaxed);
+      font-family:var(--font-body) !important;
+      font-weight:400 !important;
+      letter-spacing:normal !important;
+    }
+    .modal .primary-btn{ margin-top:8px; }
+
+    .toast{
+      position:fixed;
+      left:50%;
+      bottom:22px;
+      transform:translateX(-50%);
+      z-index:120;
+      width:min(540px, calc(100% - 28px));
+      display:none;
+      border-radius:24px;
+      padding:16px;
+      border:1px solid var(--glass-border-strong);
+      background:var(--glass-bg);
+      backdrop-filter:blur(var(--glass-blur));
+      -webkit-backdrop-filter:blur(var(--glass-blur));
+      box-shadow:0 28px 80px rgba(18,25,64,.28), inset 0 1px 0 rgba(255,255,255,.62);
+    }
+    .toast.show{ display:block; animation:toastIn .45s cubic-bezier(.16,1,.3,1) both; }
+    .toast-top{ display:flex; align-items:flex-start; gap:12px; }
+    .toast-icon{ width:42px; height:42px; border-radius:14px; display:grid; place-items:center; flex:0 0 auto; background:rgba(36,92,255,.12); font-size:23px; }
+    .toast h3{ margin:0 0 4px; font-size:var(--fs-md); line-height:var(--lh-tight); font-family:var(--font-body) !important; font-weight:500 !important; letter-spacing:normal !important; }
+    .toast p{ margin:0; color:rgba(16,20,35,.70); font-size:var(--fs-sm); line-height:var(--lh-relaxed); font-family:var(--font-body) !important; font-weight:400 !important; letter-spacing:normal !important; }
+
+    @media (max-width: 980px){
+      .grid{ grid-template-columns:1fr; }
+      .white-canvas{ min-height:430px; }
+      .hero{ align-items:flex-start; flex-direction:column; }
+    }
+    @media (max-width: 700px){
+      .canvas-grid{ grid-template-columns:1fr; }
+      .white-canvas{ min-height:360px; }
+      .shadow-card{ width:min(190px, 68%); }
+    }
+    @media (max-width: 600px){
+      .app{ width:min(100% - 16px, 600px); padding-top:8px; }
+
+      /* Single-row iOS-style toolbar: never stack vertically */
+      .topbar{
+        top:6px;
+        display:grid;
+        grid-template-columns:minmax(72px,auto) minmax(0,1fr) minmax(72px,auto);
+        gap:6px;
+        padding:6px;
+        margin-bottom:10px;
+        border-radius:22px;
+        flex-wrap:nowrap;
+      }
+      .nav-left, .nav-right{ display:flex; min-width:0; }
+      .nav-left .pill-btn, .nav-right .pill-btn{
+        min-height:34px;
+        padding:0 10px;
+        font-size:var(--fs-xs);
+        border-radius:999px;
+        overflow:hidden;
+        text-overflow:ellipsis;
+      }
+      .level-pill{
+        padding:8px 8px;
+        font-size:var(--fs-xs);
+        min-width:0;
+        overflow:hidden;
+        text-overflow:ellipsis;
+        white-space:nowrap;
+      }
+      .nav-left .pill-btn{ justify-content:flex-start; }
+      .nav-right .pill-btn{ justify-content:flex-end; }
+
+      .hero{ margin:0 2px 10px; gap:8px; }
+      .hero h1{ font-size:2.25rem; letter-spacing:-0.02em !important; }
+      .hero p{ font-size:var(--fs-sm); line-height:var(--lh-normal); }
+      .grid{ gap:10px; }
+      .arena{ padding:12px; border-radius:20px; min-height:auto; }
+      .stage-head{ flex-direction:column; gap:8px; }
+      .stage-head h2{ font-size:var(--fs-lg); }
+      .stage-head p{ font-size:var(--fs-sm); }
+      .white-canvas{ min-height:330px; border-radius:20px; }
+      .canvas-label{ padding:14px 14px 10px; font-size:16px; }
+      .card-zone{ padding:20px; }
+      .side .bento, .check-panel{ padding:14px; border-radius:20px; }
+      .layer-box{ padding:13px; }
+      .panel-copy{ font-size:var(--fs-sm); margin-bottom:12px; }
+      .primary-btn,.secondary-btn{ min-height:46px; border-radius:16px; }
+      .modal{ padding:24px 20px 20px; border-radius:24px; }
+      .modal h2{ margin-right:40px; }
+    }
+
+    @media (max-width: 380px){
+      .nav-left .pill-btn, .nav-right .pill-btn{ font-size:10px; padding:0 7px; }
+      .level-pill{ font-size:10px; padding:8px 6px; }
+    }
+
+
+    /* ---- Shared performance eco-mode (synced from dashboard localStorage) ---- */
+    body.eco-mode{
+      animation:none !important;
+      background-position:50% 50% !important;
+    }
+    body.eco-mode::before,
+    body.eco-mode::after{
+      display:none !important;
+    }
+    body.eco-mode .topbar,
+    body.eco-mode .bento,
+    body.eco-mode .pill-btn,
+    body.eco-mode .level-pill,
+    body.eco-mode .decor-pill,
+    body.eco-mode .layer-box,
+    body.eco-mode .value-badge,
+    body.eco-mode .secondary-btn,
+    body.eco-mode .modal,
+    body.eco-mode .toast,
+    body.eco-mode .close-modal,
+    body.eco-mode .text-capsule,
+    body.eco-mode .mobile-dpad,
+    body.eco-mode .dpad-btn,
+    body.eco-mode .ghost-toggle{
+      backdrop-filter:blur(4px) !important;
+      -webkit-backdrop-filter:blur(4px) !important;
+      background:rgba(255,255,255,.88) !important;
+      box-shadow:0 10px 28px rgba(26,31,64,.12) !important;
+    }
+    body.eco-mode .modal-backdrop{
+      backdrop-filter:blur(4px) !important;
+      -webkit-backdrop-filter:blur(4px) !important;
+    }
+    body.eco-mode *{
+      animation-duration:.01ms !important;
+      animation-iteration-count:1 !important;
+    }
+  </style>
+</head>
+<body>
+  <script>
+    (() => {
+      try{
+        const params = new URLSearchParams(window.location.search);
+        const urlEcoMode = params.get('eco');
+        if(urlEcoMode === 'enabled' || urlEcoMode === 'disabled'){
+          localStorage.setItem('ecoMode', urlEcoMode);
+        }
+        const savedEcoMode = urlEcoMode || localStorage.getItem('ecoMode');
+        if(savedEcoMode === 'enabled'){
+          document.body.classList.add('eco-mode');
+        }
+      }catch(error){}
+    })();
+  </script>
+    <div class="app">
+    <header class="topbar" aria-label="Верхняя навигация">
+      <div class="nav-left"><a class="pill-btn" href="./index.html" aria-label="Вернуться на главную">← На главную</a></div>
+      <div class="level-pill" id="levelBadge" aria-live="polite">Уровень 1</div>
+      <div class="nav-right"><button class="pill-btn" id="rulesBtn" type="button">Как играть?</button></div>
+    </header>
+
+    <section class="hero" aria-labelledby="mainTitle">
+      <h1 id="mainTitle">Shadow Master</h1>
+      <p>Повторите эталонную двухслойную тень: мягкое рассеянное свечение и чёткое ядро. Оценка скрыта до проверки результата.</p>
+    </section>
+
+    <main class="grid">
+      <div class="main-column">
+      <section class="bento arena" aria-label="Игровое поле">
+        <div class="stage-head">
+          <div>
+            <h2>Визуальная дуэль теней</h2>
+            <p>Сравнивайте карточки только глазами. Белые холсты дают максимальный контраст и честно показывают каждую тень.</p>
+          </div>
+          <div class="decor-pill">2 слоя · точность по Гауссу</div>
+        </div>
+
+        <div class="canvas-grid" aria-label="Эталон и ваша копия">
+            <section class="white-canvas" aria-labelledby="targetLabel">
+              <div class="canvas-label" id="targetLabel"><span>Эталон</span></div>
+              <div class="card-zone">
+                <div class="shadow-card target-card" id="targetCard" aria-label="Эталонная карточка">
+                  <div class="mark">S</div>
+                </div>
+              </div>
+            </section>
+
+            <section class="white-canvas" aria-labelledby="playerLabel">
+              <div class="canvas-label" id="playerLabel"><span>Ваша копия</span></div>
+              <div class="card-zone">
+                <div class="shadow-card" id="playerCard" aria-label="Ваша карточка">
+                  <div class="mark">S</div>
+                </div>
+              </div>
+            </section>
+        </div>
+      </section>
+        <section class="bento check-panel">
+          <h2 class="panel-title">Проверка</h2>
+          <p class="panel-copy">Итог считается нормализованным многомерным евклидовым расстоянием с экспоненциальным спадом. Идеальное совпадение даёт 100%.</p>
+          <div class="action-stack">
+            <button class="primary-btn" id="checkBtn" type="button">Проверить результат</button>
+            <button class="secondary-btn" id="nextBtn" type="button" disabled>Следующий уровень</button>
+          </div>
+        </section>
+
+      </div>
+
+      <aside class="side" aria-label="Панель управления">
+        <section class="bento">
+          <h2 class="panel-title">Настройки тени</h2>
+          <p class="panel-copy">Два слоя складываются в один CSS box-shadow. Подсказок по точности здесь нет — только живые значения ваших ползунков.</p>
+
+          <div class="layer-box">
+            <h3 class="layer-title"><span>Рассеянное свечение</span><span>Слой 1</span></h3>
+            <div class="control">
+              <div class="label-row"><label for="l1x">Смещение X</label><span class="value-badge" id="l1xValue">0 px</span></div>
+              <input id="l1x" data-key="l1x" type="range" min="-30" max="30" step="1" value="0" />
+            </div>
+            <div class="control">
+              <div class="label-row"><label for="l1y">Смещение Y</label><span class="value-badge" id="l1yValue">0 px</span></div>
+              <input id="l1y" data-key="l1y" type="range" min="-30" max="30" step="1" value="0" />
+            </div>
+            <div class="control">
+              <div class="label-row"><label for="l1blur">Размытие</label><span class="value-badge" id="l1blurValue">0 px</span></div>
+              <input id="l1blur" data-key="l1blur" type="range" min="0" max="100" step="1" value="0" />
+            </div>
+            <div class="control">
+              <div class="label-row"><label for="l1alpha">Непрозрачность</label><span class="value-badge" id="l1alphaValue">0.00</span></div>
+              <input id="l1alpha" data-key="l1alpha" type="range" min="0" max="0.50" step="0.01" value="0" />
+            </div>
+          </div>
+
+          <div class="layer-box">
+            <h3 class="layer-title"><span>Чёткое ядро</span><span>Слой 2</span></h3>
+            <div class="control">
+              <div class="label-row"><label for="l2x">Смещение X</label><span class="value-badge" id="l2xValue">0 px</span></div>
+              <input id="l2x" data-key="l2x" type="range" min="-15" max="15" step="1" value="0" />
+            </div>
+            <div class="control">
+              <div class="label-row"><label for="l2y">Смещение Y</label><span class="value-badge" id="l2yValue">0 px</span></div>
+              <input id="l2y" data-key="l2y" type="range" min="-15" max="15" step="1" value="0" />
+            </div>
+            <div class="control">
+              <div class="label-row"><label for="l2blur">Размытие</label><span class="value-badge" id="l2blurValue">0 px</span></div>
+              <input id="l2blur" data-key="l2blur" type="range" min="0" max="30" step="1" value="0" />
+            </div>
+            <div class="control">
+              <div class="label-row"><label for="l2alpha">Непрозрачность</label><span class="value-badge" id="l2alphaValue">0.00</span></div>
+              <input id="l2alpha" data-key="l2alpha" type="range" min="0" max="0.80" step="0.01" value="0" />
+            </div>
+          </div>
+        </section>
+
+
+        <section class="bento">
+          <h2 class="panel-title">Подсказки</h2>
+          <ul class="hint-list">
+            <li><span class="dot"></span><span>Сначала поймайте направление смещения, затем подбирайте размытие.</span></li>
+            <li><span class="dot"></span><span>Мягкий слой обычно шире и прозрачнее, ядро — короче и плотнее.</span></li>
+            <li><span class="dot"></span><span>Нулевая плоская тень не проходит: совпадение нужно восстановить по всем измерениям.</span></li>
+          </ul>
+        </section>
+      </aside>
+    </main>
+  </div>
+
+  <div class="modal-backdrop" id="modalBackdrop" role="presentation">
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="rulesTitle" aria-describedby="rulesText">
+      <button class="close-modal" id="closeModal" type="button" aria-label="Закрыть правила">×</button>
+      <h2 id="rulesTitle">Правила игры: Мастер Теней</h2>
+      <div id="rulesText">
+        <p>Ваша цель — повторить эталонную тень на карточке справа с помощью восьми ползунков.</p>
+        <p>Тень состоит из двух слоёв: «Рассеянное свечение» создаёт широкую мягкую глубину, а «Чёткое ядро» отвечает за близкую контактную тень.</p>
+        <p>Во время настройки игра не показывает процент точности и не раскрывает числовой ответ. Нажмите «Проверить результат», чтобы увидеть итоговую оценку в системном уведомлении.</p>
+      </div>
+      <button class="primary-btn" id="startBtn" type="button">Понятно, начать</button>
+    </section>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true">
+    <div class="toast-top">
+      <div class="toast-icon" id="toastIcon">🎯</div>
+      <div>
+        <h3 id="toastTitle">Результат проверки</h3>
+        <p id="toastText">Оценка появится после проверки.</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+
+    window.addEventListener('DOMContentLoaded', () => {
+      try{
+        const params = new URLSearchParams(window.location.search);
+        const urlEcoMode = params.get('eco');
+        if(urlEcoMode === 'enabled' || urlEcoMode === 'disabled'){
+          localStorage.setItem('ecoMode', urlEcoMode);
+        }
+        const savedEcoMode = urlEcoMode || localStorage.getItem('ecoMode');
+        document.body.classList.toggle('eco-mode', savedEcoMode === 'enabled');
+        const homeLink = document.querySelector('.nav-left .pill-btn');
+        if(homeLink){
+          homeLink.href = `./index.html?eco=${savedEcoMode === 'enabled' ? 'enabled' : 'disabled'}`;
+        }
+      }catch(error){}
+    });
+
+    (() => {
+      'use strict';
+
+      const els = {
+        levelBadge: document.getElementById('levelBadge'),
+        targetCard: document.getElementById('targetCard'),
+        playerCard: document.getElementById('playerCard'),
+        checkBtn: document.getElementById('checkBtn'),
+        nextBtn: document.getElementById('nextBtn'),
+        rulesBtn: document.getElementById('rulesBtn'),
+        modalBackdrop: document.getElementById('modalBackdrop'),
+        closeModal: document.getElementById('closeModal'),
+        startBtn: document.getElementById('startBtn'),
+        toast: document.getElementById('toast'),
+        toastIcon: document.getElementById('toastIcon'),
+        toastTitle: document.getElementById('toastTitle'),
+        toastText: document.getElementById('toastText'),
+        inputs: Array.from(document.querySelectorAll('input[type="range"][data-key]')),
+        values: {
+          l1x: document.getElementById('l1xValue'),
+          l1y: document.getElementById('l1yValue'),
+          l1blur: document.getElementById('l1blurValue'),
+          l1alpha: document.getElementById('l1alphaValue'),
+          l2x: document.getElementById('l2xValue'),
+          l2y: document.getElementById('l2yValue'),
+          l2blur: document.getElementById('l2blurValue'),
+          l2alpha: document.getElementById('l2alphaValue')
+        }
+      };
+
+      const privateGame = (() => {
+        const state = {
+          level: 1,
+          seed: Math.floor(Math.random() * 1000000),
+          target: null,
+          toastTimer: null
+        };
+
+        const ranges = Object.freeze({
+          l1x: 60, l1y: 60, l1blur: 100, l1alpha: .50,
+          l2x: 30, l2y: 30, l2blur: 30, l2alpha: .80
+        });
+        const weights = Object.freeze({
+          l1x: .82, l1y: .95, l1blur: 1.25, l1alpha: 1.55,
+          l2x: 1.05, l2y: 1.25, l2blur: 1.25, l2alpha: 1.65
+        });
+
+        function mulberry32(seed){
+          return function(){
+            let t = seed += 0x6D2B79F5;
+            t = Math.imul(t ^ (t >>> 15), t | 1);
+            t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+            return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+          };
+        }
+        function randBetween(rand, min, max){ return min + rand() * (max - min); }
+        function signed(rand, minAbs, maxAbs){
+          const value = randBetween(rand, minAbs, maxAbs);
+          return rand() > .5 ? value : -value;
+        }
+        function rounded(value, step){ return Math.round(value / step) * step; }
+        function clamp(value, min, max){ return Math.max(min, Math.min(max, value)); }
+
+        function makeTarget(){
+          const rand = mulberry32(state.seed + state.level * 4049);
+          const driftX = signed(rand, 7, 24);
+          const driftY = randBetween(rand, 12, 30);
+          const coreX = clamp(driftX * randBetween(rand, .24, .55) + signed(rand, 0, 3), -15, 15);
+          const coreY = clamp(driftY * randBetween(rand, .22, .50), -15, 15);
+
+          state.target = Object.freeze({
+            l1x: rounded(clamp(driftX, -30, 30), 1),
+            l1y: rounded(clamp(driftY, -30, 30), 1),
+            l1blur: rounded(randBetween(rand, 44, 92), 1),
+            l1alpha: rounded(randBetween(rand, .22, .48), .01),
+            l2x: rounded(coreX, 1),
+            l2y: rounded(coreY, 1),
+            l2blur: rounded(randBetween(rand, 8, 27), 1),
+            l2alpha: rounded(randBetween(rand, .28, .76), .01)
+          });
+        }
+
+        function layerString(values){
+          return `${values.l1x}px ${values.l1y}px ${values.l1blur}px rgba(36, 92, 255, ${values.l1alpha}), ` +
+                 `${values.l2x}px ${values.l2y}px ${values.l2blur}px rgba(29, 29, 31, ${values.l2alpha})`;
+        }
+
+        function readPlayer(){
+          const values = {};
+          els.inputs.forEach(input => { values[input.dataset.key] = Number(input.value); });
+          return values;
+        }
+
+        function scorePlayer(values){
+          let weightedSquares = 0;
+          let weightTotal = 0;
+          Object.keys(ranges).forEach(key => {
+            const normalizedDelta = (values[key] - state.target[key]) / ranges[key];
+            weightedSquares += weights[key] * normalizedDelta * normalizedDelta;
+            weightTotal += weights[key];
+          });
+          const normalizedDistance = Math.sqrt(weightedSquares / weightTotal);
+          const sigma = .18;
+          const raw = Math.exp(-(normalizedDistance * normalizedDistance) / (2 * sigma * sigma)) * 100;
+          return Math.max(0, Math.min(100, Math.round(raw)));
+        }
+
+        function initLevel(){
+          makeTarget();
+          els.targetCard.style.boxShadow = layerString(state.target);
+        }
+
+        function nextLevel(){
+          state.level += 1;
+          state.seed = Math.floor(Math.random() * 1000000) + state.level * 911;
+          els.levelBadge.textContent = `Уровень ${state.level}`;
+          initLevel();
+        }
+
+        function getLevel(){ return state.level; }
+        function getToastTimer(){ return state.toastTimer; }
+        function setToastTimer(timer){ state.toastTimer = timer; }
+
+        return { readPlayer, layerString, scorePlayer, initLevel, nextLevel, getLevel, getToastTimer, setToastTimer };
+      })();
+
+      function formatValue(key, value){
+        if(key.endsWith('alpha')) return Number(value).toFixed(2);
+        return `${Math.round(Number(value))} px`;
+      }
+
+      function applyPlayerControls(){
+        const values = privateGame.readPlayer();
+        els.inputs.forEach(input => {
+          els.values[input.dataset.key].textContent = formatValue(input.dataset.key, input.value);
+        });
+        els.playerCard.style.boxShadow = privateGame.layerString(values);
+        els.nextBtn.disabled = true;
+      }
+
+      function showToast(title, text, icon){
+        clearTimeout(privateGame.getToastTimer());
+        els.toastTitle.textContent = title;
+        els.toastText.textContent = text;
+        els.toastIcon.textContent = icon;
+        els.toast.classList.remove('show');
+        void els.toast.offsetWidth;
+        els.toast.classList.add('show');
+        privateGame.setToastTimer(setTimeout(() => els.toast.classList.remove('show'), 7200));
+      }
+
+      function checkResult(){
+        const score = privateGame.scorePlayer(privateGame.readPlayer());
+        let title, text, icon;
+        if(score === 100){
+          title = 'Идеальное совпадение — 100% 🏆';
+          icon = '🏆';
+          text = 'Пиксельная геометрия обоих слоёв совпала полностью. Вы настоящий Мастер Теней!';
+          els.nextBtn.disabled = false;
+        }else if(score >= 86){
+          title = `Мастерский результат — ${score}% 🎯`;
+          icon = '🎯';
+          text = 'Тень почти неотличима от эталона. Можно переходить дальше или добивать идеальные 100%.';
+          els.nextBtn.disabled = false;
+        }else if(score >= 62){
+          title = `Хорошая форма — ${score}% ✨`;
+          icon = '✨';
+          text = 'Общий характер похож, но одно или два измерения заметно расходятся. Подстройте смещение, размытие и плотность.';
+          els.nextBtn.disabled = false;
+        }else if(score >= 25){
+          title = `Пока далеко — ${score}% 👀`;
+          icon = '👀';
+          text = 'Слои уже видны, но нормализованное евклидово расстояние ещё велико. Начните с направления и силы ядра.';
+          els.nextBtn.disabled = true;
+        }else{
+          title = `Слишком плоско — ${score}% 🛑`;
+          icon = '🛑';
+          text = 'Похоже, тень почти не совпадает с эталоном. Добавьте мягкое свечение и плотное контактное ядро.';
+          els.nextBtn.disabled = true;
+        }
+        showToast(title, text, icon);
+      }
+
+      function resetControls(){
+        els.inputs.forEach(input => { input.value = '0'; });
+        applyPlayerControls();
+      }
+
+      function nextLevel(){
+        privateGame.nextLevel();
+        resetControls();
+        showToast('Новый уровень ✨', 'Эталонная тень сгенерирована заново. Ползунки сброшены в ноль.', '✨');
+      }
+
+      function openModal(){ els.modalBackdrop.classList.add('active'); }
+      function closeModal(){ els.modalBackdrop.classList.remove('active'); }
+
+      els.inputs.forEach(input => input.addEventListener('input', applyPlayerControls));
+      els.checkBtn.addEventListener('click', checkResult);
+      els.nextBtn.addEventListener('click', nextLevel);
+      els.rulesBtn.addEventListener('click', openModal);
+      els.closeModal.addEventListener('click', closeModal);
+      els.startBtn.addEventListener('click', closeModal);
+      els.modalBackdrop.addEventListener('click', event => {
+        if(event.target === els.modalBackdrop) closeModal();
+      });
+      window.addEventListener('keydown', event => {
+        if(event.key === 'Escape') closeModal();
+      });
+
+      privateGame.initLevel();
+      resetControls();
+      window.setTimeout(openModal, 260);
+    })();
+  </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a15598b3382aee7e',t:'MTc4MzA3ODYyOA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

@@ -1,0 +1,1099 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Контрастный страж</title>
+  <style>
+    :root{
+      --glass: rgba(255,255,255,.45);
+      --glass-strong: rgba(255,255,255,.65);
+      --stroke: rgba(255,255,255,.62);
+      --shadow: 0 24px 70px rgba(26, 31, 64, .22);
+      --shadow-soft: 0 10px 34px rgba(26, 31, 64, .15);
+      --ink: #101423;
+      --muted: rgba(16,20,35,.68);
+      --accent: #245cff;
+      --ok: #0a8f5a;
+      --warn: #a96a00;
+      --bad: #b42318;
+      --radius: 24px;
+      font-family: "Segoe UI", "Arial", sans-serif;
+
+      /* Типографическая шкала (кратна базовым 16px = 1rem).
+         2xs/xs — вспомогательные метки и декоративные подписи;
+         sm — компактный интерфейсный текст (кнопки, списки);
+         base — основной текст для чтения (минимум 16px);
+         md/lg — подзаголовки блоков;
+         display-* — крупные заголовки, адаптивные через clamp(). */
+      --fs-2xs: 0.75rem;   /* 12px */
+      --fs-xs: 0.8125rem;  /* 13px */
+      --fs-sm: 0.875rem;   /* 14px */
+      --fs-base: 1rem;     /* 16px */
+      --fs-md: 1.125rem;   /* 18px */
+      --fs-lg: 1.25rem;    /* 20px */
+      --lh-tight: 1.2;
+      --lh-normal: 1.5;
+      --lh-relaxed: 1.6;
+    }
+
+    *{ box-sizing:border-box; }
+    html{ font-size:16px; }
+    html,body{ min-height:100%; }
+    body{
+      margin:0;
+      color:var(--ink);
+      font-size:var(--fs-base);
+      line-height:var(--lh-normal);
+      overflow-x:hidden;
+      background: linear-gradient(125deg, #075cff 0%, #7561ff 33%, #d36fff 67%, #ff8fc9 100%);
+      background-size: 260% 260%;
+      animation: gradientShift 18s ease-in-out infinite;
+    }
+    body::before{
+      content:"";
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      background:
+        radial-gradient(circle at 16% 18%, rgba(255,255,255,.34), transparent 28%),
+        radial-gradient(circle at 86% 12%, rgba(255,255,255,.18), transparent 25%),
+        radial-gradient(circle at 50% 92%, rgba(255,255,255,.22), transparent 30%);
+      mix-blend-mode: screen;
+    }
+    @keyframes gradientShift{
+      0%,100%{ background-position: 0% 45%; }
+      50%{ background-position: 100% 55%; }
+    }
+    @keyframes fadeInUp{
+      from{ opacity:0; transform: translate3d(0, 24px, 0) scale(.985); filter: blur(8px); }
+      to{ opacity:1; transform: translate3d(0,0,0) scale(1); filter: blur(0); }
+    }
+    @keyframes toastIn{
+      from{ opacity:0; transform: translate(-50%, 18px) scale(.96); }
+      to{ opacity:1; transform: translate(-50%, 0) scale(1); }
+    }
+    @keyframes floatOrb{
+      0%,100%{ transform: translateY(0) translateX(0); }
+      50%{ transform: translateY(-18px) translateX(10px); }
+    }
+
+    .app{
+      width:min(1220px, calc(100% - 28px));
+      margin:0 auto;
+      padding:18px 0 26px;
+      position:relative;
+      z-index:1;
+    }
+
+    .topbar{
+      position:sticky;
+      top:12px;
+      z-index:20;
+      display:grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items:center;
+      gap:12px;
+      padding:10px;
+      margin-bottom:18px;
+      border:1px solid rgba(255,255,255,.48);
+      border-radius:999px;
+      background: rgba(255,255,255,.34);
+      backdrop-filter: blur(28px) saturate(160%);
+      -webkit-backdrop-filter: blur(28px) saturate(160%);
+      box-shadow: var(--shadow-soft);
+      animation: fadeInUp .82s cubic-bezier(.16,1,.3,1) both;
+    }
+    .nav-left{ justify-self:start; }
+    .nav-right{ justify-self:end; }
+    .pill-btn, .level-pill{
+      border:1px solid rgba(255,255,255,.62);
+      border-radius:999px;
+      background: rgba(255,255,255,.46);
+      color:var(--ink);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.55), 0 8px 22px rgba(28,36,80,.12);
+      backdrop-filter: blur(20px) saturate(150%);
+      -webkit-backdrop-filter: blur(20px) saturate(150%);
+      text-decoration:none;
+      font-family: "Segoe UI", "Arial", sans-serif !important;
+      font-weight: 500 !important;
+      letter-spacing: normal !important;
+      transition: transform .22s ease, background .22s ease, box-shadow .22s ease;
+      white-space:nowrap;
+    }
+    .pill-btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:42px;
+      padding:0 18px;
+      cursor:pointer;
+      font-size:var(--fs-sm);
+      appearance:none;
+    }
+    .pill-btn:hover{ transform: translateY(-1px); background: rgba(255,255,255,.62); box-shadow: 0 14px 28px rgba(28,36,80,.16); }
+    .pill-btn:active{ transform: translateY(0) scale(.98); }
+    .level-pill{
+      padding:10px 20px;
+      font-size:var(--fs-base);
+      background: rgba(255,255,255,.58);
+    }
+
+    .hero{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:20px;
+      margin:0 4px 18px;
+      animation: fadeInUp .86s .06s cubic-bezier(.16,1,.3,1) both;
+    }
+    .hero h1{
+      margin:0;
+      font-size:clamp(34px, 6vw, 76px);
+      line-height:.92;
+      letter-spacing: -0.02em;
+      font-weight: 800;
+      color:rgba(255,255,255,.94);
+      text-shadow: 0 12px 44px rgba(28,28,70,.24);
+    }
+    .hero p{
+      max-width:470px;
+      margin:0 0 6px;
+      font-size:clamp(1rem, 2vw, 1.125rem);
+      line-height:var(--lh-relaxed);
+      color:rgba(255,255,255,.86);
+      text-shadow: 0 8px 26px rgba(20,20,55,.24);
+      font-family: "Segoe UI", "Arial", sans-serif !important;
+      font-weight: 500 !important;
+      letter-spacing: normal !important;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: minmax(0, 1.42fr) minmax(320px, .58fr);
+      gap:18px;
+      align-items:stretch;
+    }
+    .bento{
+      border:1px solid var(--stroke);
+      border-radius:var(--radius);
+      background:var(--glass);
+      backdrop-filter: blur(25px) saturate(160%);
+      -webkit-backdrop-filter: blur(25px) saturate(160%);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      animation: fadeInUp .9s cubic-bezier(.16,1,.3,1) both;
+    }
+    .canvas-card{ animation-delay:.14s; padding:14px; min-height:620px; }
+    .side{ display:grid; gap:14px; }
+    .side .bento{ padding:18px; }
+    .side .bento:nth-child(1){ animation-delay:.22s; }
+    .side .bento:nth-child(2){ animation-delay:.30s; }
+    .side .bento:nth-child(3){ animation-delay:.38s; }
+
+    .stage{
+      position:relative;
+      width:100%;
+      height:100%;
+      min-height:590px;
+      border-radius:20px;
+      overflow:hidden;
+      background:#111;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.32), 0 20px 55px rgba(14,18,48,.18);
+      isolation:isolate;
+    }
+    canvas{
+      position:absolute;
+      inset:0;
+      width:100%;
+      height:100%;
+      display:block;
+    }
+    .canvas-vignette{
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+      background: radial-gradient(circle at 50% 45%, transparent 0%, rgba(0,0,0,.08) 65%, rgba(0,0,0,.18) 100%);
+      z-index:1;
+    }
+    .preview-wrap{
+      position:absolute;
+      left:50%;
+      top:50%;
+      transform: translate(-50%,-50%);
+      width:min(620px, calc(100% - 42px));
+      z-index:2;
+    }
+    .text-capsule{
+      border-radius:30px;
+      padding:28px 32px;
+      border:1px solid rgba(255,255,255,.34);
+      box-shadow: 0 24px 70px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.28);
+      transition: background .1s linear, backdrop-filter .1s linear, color .1s linear, font-weight .1s linear;
+      overflow:hidden;
+    }
+    .text-capsule h2{
+      margin:0 0 10px;
+      font-size:clamp(24px, 4.4vw, 48px);
+      line-height:.98;
+      letter-spacing: normal !important;
+    }
+    .text-capsule p{
+      margin:0;
+      font-size:clamp(16px, 1.9vw, 19px);
+      line-height:1.48;
+      letter-spacing: normal !important;
+    }
+    .stage-caption{
+      position:absolute;
+      left:16px;
+      right:16px;
+      bottom:16px;
+      z-index:3;
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      color:rgba(255,255,255,.88);
+      font-size:var(--fs-2xs);
+      font-family: "Segoe UI", "Arial", sans-serif !important;
+      font-weight: 500 !important;
+      letter-spacing: normal !important;
+      text-shadow:0 2px 18px rgba(0,0,0,.38);
+      pointer-events:none;
+    }
+
+    .panel-title{
+      margin:0 0 4px;
+      font-size:var(--fs-lg);
+      line-height:var(--lh-tight);
+      font-family: "Segoe UI", "Arial", sans-serif !important;
+      font-weight: 500 !important;
+      letter-spacing: normal !important;
+    }
+    .panel-copy{
+      margin:0 0 16px;
+      color:var(--muted);
+      line-height:var(--lh-relaxed);
+      font-size:var(--fs-base);
+      font-family: "Segoe UI", "Arial", sans-serif !important;
+      font-weight: 400 !important;
+      letter-spacing: normal !important;
+    }
+    .control{
+      margin-top:16px;
+      padding-top:16px;
+      border-top:1px solid rgba(255,255,255,.45);
+    }
+    .control:first-of-type{ margin-top:0; padding-top:0; border-top:0; }
+    .label-row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:10px;
+      font-family: "Segoe UI", "Arial", sans-serif !important;
+      font-weight: 500 !important;
+      letter-spacing: normal !important;
+      font-size:var(--fs-sm);
+    }
+    .value-badge{
+      min-width:64px;
+      text-align:center;
+      padding:5px 9px;
+      border-radius:999px;
+      background:rgba(255,255,255,.50);
+      border:1px solid rgba(255,255,255,.55);
+      color:rgba(16,20,35,.78);
+      font-size:var(--fs-2xs);
+      font-family: "Segoe UI", "Arial", sans-serif !important;
+      font-weight: 400 !important;
+      letter-spacing: normal !important;
+      font-variant-numeric: tabular-nums;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.45);
+    }
+    input[type="range"]{
+      width:100%;
+      height:28px;
+      margin:0;
+      appearance:none;
+      -webkit-appearance:none;
+      background:transparent;
+      cursor:pointer;
+    }
+    input[type="range"]::-webkit-slider-runnable-track{
+      height:12px;
+      border-radius:999px;
+      background:rgba(0,0,0,.16);
+      box-shadow: inset 0 1px 3px rgba(0,0,0,.12), 0 1px 0 rgba(255,255,255,.5);
+    }
+    input[type="range"]::-moz-range-track{
+      height:12px;
+      border-radius:999px;
+      background:rgba(0,0,0,.16);
+      box-shadow: inset 0 1px 3px rgba(0,0,0,.12), 0 1px 0 rgba(255,255,255,.5);
+    }
+    input[type="range"]::-webkit-slider-thumb{
+      -webkit-appearance:none;
+      width:34px;
+      height:22px;
+      margin-top:-5px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.82);
+      background:linear-gradient(180deg, #fff, #f5f7ff);
+      box-shadow:0 7px 16px rgba(10,20,60,.24), inset 0 -1px 0 rgba(0,0,0,.06);
+    }
+    input[type="range"]::-moz-range-thumb{
+      width:34px;
+      height:22px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.82);
+      background:linear-gradient(180deg, #fff, #f5f7ff);
+      box-shadow:0 7px 16px rgba(10,20,60,.24), inset 0 -1px 0 rgba(0,0,0,.06);
+    }
+    .tint-row{
+      display:grid;
+      grid-template-columns: auto 1fr auto;
+      align-items:center;
+      gap:10px;
+      color:rgba(16,20,35,.70);
+      font-size:var(--fs-2xs);
+      font-family: "Segoe UI", "Arial", sans-serif !important;
+      font-weight: 500 !important;
+      text-transform:uppercase;
+      letter-spacing: 0.01em !important;
+    }
+
+    .action-stack{ display:grid; gap:10px; }
+    .primary-btn, .secondary-btn{
+      width:100%;
+      border:0;
+      border-radius:18px;
+      min-height:60px;
+      padding:0 18px;
+      font-weight: 500 !important;
+      letter-spacing: normal !important;
+      cursor:pointer;
+      transition: transform .22s ease, box-shadow .22s ease, opacity .22s ease, filter .22s ease;
+      font-family: "Segoe UI", "Arial", sans-serif !important;
+    }
+    .primary-btn{
+      color:white;
+      background:linear-gradient(135deg, #0b43ff, #8a39ff 52%, #e34cb5);
+      box-shadow:0 16px 32px rgba(53,62,180,.28), inset 0 1px 0 rgba(255,255,255,.28);
+    }
+    .secondary-btn{
+      color:var(--ink);
+      background:rgba(255,255,255,.48);
+      border:1px solid rgba(255,255,255,.62);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.55), 0 10px 22px rgba(28,36,80,.10);
+    }
+    .primary-btn:hover, .secondary-btn:hover{ transform: translateY(-1px); filter:saturate(1.08); }
+    .primary-btn:active, .secondary-btn:active{ transform: scale(.985); }
+    .secondary-btn:disabled{ opacity:.44; cursor:not-allowed; transform:none; }
+    .hint-list{
+      display:grid;
+      gap:10px;
+      padding:0;
+      margin:14px 0 0;
+      list-style:none;
+    }
+    .hint-list li{
+      display:flex;
+      gap:9px;
+      align-items:flex-start;
+      color:rgba(16,20,35,.70);
+      font-size:var(--fs-sm);
+      line-height:var(--lh-relaxed);
+      font-family: "Segoe UI", "Arial", sans-serif !important;
+      font-weight: 400 !important;
+      letter-spacing: normal !important;
+    }
+    .dot{
+      width:8px;
+      height:8px;
+      border-radius:50%;
+      margin-top:5px;
+      background:rgba(36,92,255,.85);
+      box-shadow:0 0 0 5px rgba(36,92,255,.12);
+      flex:0 0 auto;
+    }
+
+    .modal-backdrop{
+      position:fixed;
+      inset:0;
+      z-index:100;
+      display:grid;
+      place-items:center;
+      padding:22px;
+      background:rgba(22,25,54,.20);
+      backdrop-filter: blur(18px) saturate(130%);
+      -webkit-backdrop-filter: blur(18px) saturate(130%);
+      opacity:0;
+      visibility:hidden;
+      pointer-events:none;
+      transition:opacity .34s cubic-bezier(.16,1,.3,1), visibility 0s linear .34s;
+    }
+    .modal-backdrop.active{
+      opacity:1;
+      visibility:visible;
+      pointer-events:auto;
+      transition-delay:0s;
+    }
+    .modal{
+      width:min(560px, 100%);
+      position:relative;
+      border-radius:24px;
+      padding:30px;
+      border:1px solid rgba(255,255,255,.72);
+      background:rgba(255,255,255,.65);
+      backdrop-filter: blur(30px) saturate(170%);
+      -webkit-backdrop-filter: blur(30px) saturate(170%);
+      box-shadow:0 36px 100px rgba(20,25,70,.30), inset 0 1px 0 rgba(255,255,255,.65);
+      opacity:0;
+      transform:translate3d(0,24px,0) scale(.985);
+      filter:blur(8px);
+      transition:
+        opacity .46s cubic-bezier(.16,1,.3,1),
+        transform .46s cubic-bezier(.16,1,.3,1),
+        filter .46s cubic-bezier(.16,1,.3,1);
+    }
+    .modal-backdrop.active .modal{
+      opacity:1;
+      transform:translate3d(0,0,0) scale(1);
+      filter:blur(0);
+    }
+    .close-modal{
+      position:absolute;
+      top:14px;
+      right:14px;
+      width:38px;
+      height:38px;
+      border:1px solid rgba(255,255,255,.64);
+      border-radius:50%;
+      background:rgba(255,255,255,.46);
+      color:rgba(16,20,35,.78);
+      font-size:20px;
+      line-height:1;
+      cursor:pointer;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.55);
+    }
+    .modal h2{
+      margin:0 44px 12px 0;
+      font-size:clamp(1.5rem, 4vw, 2.25rem);
+      line-height:var(--lh-tight);
+      font-family: "Segoe UI", "Arial", sans-serif !important;
+      font-weight: 500 !important;
+      letter-spacing: normal !important;
+    }
+    .modal p{
+      margin:0 0 12px;
+      color:rgba(16,20,35,.72);
+      font-size:var(--fs-base);
+      line-height:var(--lh-relaxed);
+      font-family: "Segoe UI", "Arial", sans-serif !important;
+      font-weight: 400 !important;
+      letter-spacing: normal !important;
+    }
+    .modal .primary-btn{ margin-top:8px; }
+
+    .toast{
+      position:fixed;
+      left:50%;
+      bottom:22px;
+      transform:translateX(-50%);
+      z-index:120;
+      width:min(520px, calc(100% - 28px));
+      display:none;
+      border-radius:24px;
+      padding:16px;
+      border:1px solid rgba(255,255,255,.72);
+      background:rgba(255,255,255,.66);
+      backdrop-filter: blur(28px) saturate(170%);
+      -webkit-backdrop-filter: blur(28px) saturate(170%);
+      box-shadow:0 28px 80px rgba(18,25,64,.28), inset 0 1px 0 rgba(255,255,255,.62);
+    }
+    .toast.show{ display:block; animation: toastIn .45s cubic-bezier(.16,1,.3,1) both; }
+    .toast-top{ display:flex; align-items:flex-start; gap:12px; }
+    .toast-icon{
+      width:42px; height:42px; border-radius:14px;
+      display:grid; place-items:center; flex:0 0 auto;
+      background:rgba(36,92,255,.12);
+      font-size:23px;
+    }
+    .toast h3{ margin:0 0 4px; font-size:var(--fs-md); line-height:var(--lh-tight); font-family:"Segoe UI","Arial",sans-serif !important; font-weight:500 !important; letter-spacing:normal !important; }
+    .toast p{ margin:0; color:rgba(16,20,35,.70); font-size:var(--fs-sm); line-height:var(--lh-relaxed); font-family:"Segoe UI","Arial",sans-serif !important; font-weight:400 !important; letter-spacing:normal !important; }
+
+    .sr-only{
+      position:absolute;
+      width:1px; height:1px;
+      padding:0; margin:-1px;
+      overflow:hidden; clip:rect(0,0,0,0);
+      white-space:nowrap; border:0;
+    }
+
+    @media (max-width: 920px){
+      .grid{ grid-template-columns:1fr; }
+      .canvas-card{ min-height:540px; }
+      .stage{ min-height:510px; }
+      .hero{ align-items:flex-start; flex-direction:column; }
+      .side{ grid-template-columns:1fr; }
+    }
+
+    @media (max-width: 600px){
+      .app{ width:min(100% - 16px, 600px); padding-top:8px; }
+      .topbar{
+        top:6px;
+        grid-template-columns: minmax(88px,1fr) auto minmax(88px,1fr);
+        gap:6px;
+        padding:6px;
+        margin-bottom:10px;
+        border-radius:22px;
+      }
+      .pill-btn{
+        min-height:36px;
+        padding:0 10px;
+        font-size:var(--fs-xs);
+        border-radius:999px;
+      }
+      .level-pill{
+        padding:8px 10px;
+        font-size:var(--fs-xs);
+        letter-spacing: normal !important;
+      }
+      .nav-left .pill-btn{ justify-content:flex-start; }
+      .nav-right .pill-btn{ justify-content:flex-end; }
+      .hero{ margin:0 2px 10px; gap:8px; }
+      .hero h1{ font-size:2.25rem; letter-spacing: -0.02em; }
+      .hero p{ font-size:var(--fs-sm); line-height:var(--lh-normal); }
+      .grid{ gap:10px; }
+      .canvas-card{ padding:8px; min-height:470px; border-radius:20px; }
+      .stage{ min-height:454px; border-radius:16px; }
+      .preview-wrap{ width:calc(100% - 26px); }
+      .text-capsule{ padding:20px 18px; border-radius:24px; }
+      .stage-caption{ bottom:10px; left:10px; right:10px; font-size:var(--fs-2xs); }
+      .side .bento{ padding:14px; border-radius:20px; }
+      .panel-copy{ font-size:var(--fs-sm); margin-bottom:12px; }
+      .control{ margin-top:12px; padding-top:12px; }
+      .primary-btn,.secondary-btn{ min-height:46px; border-radius:16px; }
+      .modal{ padding:24px 20px 20px; border-radius:24px; }
+      .modal h2{ margin-right:40px; }
+    }
+
+
+    /* ---- Shared performance eco-mode (synced from dashboard localStorage) ---- */
+    body.eco-mode{
+      animation:none !important;
+      background-position:50% 50% !important;
+    }
+    body.eco-mode::before,
+    body.eco-mode::after{
+      display:none !important;
+    }
+    body.eco-mode .topbar,
+    body.eco-mode .bento,
+    body.eco-mode .pill-btn,
+    body.eco-mode .level-pill,
+    body.eco-mode .decor-pill,
+    body.eco-mode .layer-box,
+    body.eco-mode .value-badge,
+    body.eco-mode .secondary-btn,
+    body.eco-mode .modal,
+    body.eco-mode .toast,
+    body.eco-mode .close-modal,
+    body.eco-mode .mobile-dpad,
+    body.eco-mode .dpad-btn,
+    body.eco-mode .ghost-toggle{
+      backdrop-filter:blur(4px) !important;
+      -webkit-backdrop-filter:blur(4px) !important;
+      background:rgba(255,255,255,.88) !important;
+      box-shadow:0 10px 28px rgba(26,31,64,.12) !important;
+    }
+    body.eco-mode .modal-backdrop{
+      backdrop-filter:blur(4px) !important;
+      -webkit-backdrop-filter:blur(4px) !important;
+    }
+    body.eco-mode .text-capsule{
+      /* Gameplay-critical: background opacity and blur are controlled by JS sliders. */
+      box-shadow:0 24px 70px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.28);
+    }
+    body.eco-mode *{
+      animation-duration:.01ms !important;
+      animation-iteration-count:1 !important;
+    }
+  </style>
+</head>
+<body>
+  <script>
+    (() => {
+      try{
+        const params = new URLSearchParams(window.location.search);
+        const urlEcoMode = params.get('eco');
+        if(urlEcoMode === 'enabled' || urlEcoMode === 'disabled'){
+          localStorage.setItem('ecoMode', urlEcoMode);
+        }
+        const savedEcoMode = urlEcoMode || localStorage.getItem('ecoMode');
+        if(savedEcoMode === 'enabled'){
+          document.body.classList.add('eco-mode');
+        }
+      }catch(error){}
+    })();
+  </script>
+    <div class="app">
+    <header class="topbar" aria-label="Верхняя навигация">
+      <div class="nav-left"><a class="pill-btn" href="./index.html" aria-label="Вернуться на главную">← На главную</a></div>
+      <div class="level-pill" id="levelBadge" aria-live="polite">Уровень 1</div>
+      <div class="nav-right"><button class="pill-btn" id="rulesBtn" type="button">Как играть?</button></div>
+    </header>
+
+    <section class="hero" aria-labelledby="mainTitle">
+      <h1 id="mainTitle">Contrast Guardian</h1>
+      <p>Настройте стеклянную подложку так, чтобы текст оставался читаемым на шумном фоне — без превращения капсулы в глухую плашку.</p>
+    </section>
+
+    <main class="grid">
+      <section class="bento canvas-card" aria-label="Игровое поле">
+        <div class="stage" id="stage">
+          <canvas id="artCanvas" aria-hidden="true"></canvas>
+          <div class="canvas-vignette" aria-hidden="true"></div>
+          <div class="preview-wrap" id="previewWrap">
+            <article class="text-capsule" id="textCapsule" aria-label="Предпросмотр текста">
+              <h2>Читаемость поверх хаоса</h2>
+              <p>Яркие изображения часто ломают типографику. Хороший дизайнер подбирает размытие, прозрачность и толщину шрифта так, чтобы интерфейс был и красивым, и доступным.</p>
+            </article>
+          </div>
+          <div class="stage-caption" aria-hidden="true">
+            <span>сложная процедурная сцена</span>
+            <span>стеклянная капсула</span>
+          </div>
+        </div>
+      </section>
+
+      <aside class="side" aria-label="Панель управления">
+        <section class="bento">
+          <h2 class="panel-title">Настройки стекла</h2>
+          <p class="panel-copy">Двигайте ползунки и оценивайте результат глазами. Числа проверки скрыты до нажатия кнопки.</p>
+
+          <div class="control">
+            <div class="label-row"><label for="blurRange">Радиус размытия фона</label><span class="value-badge" id="blurValue">0 px</span></div>
+            <input id="blurRange" type="range" min="0" max="40" step="1" value="0" />
+          </div>
+
+          <div class="control">
+            <div class="label-row"><label for="opacityRange">Непрозрачность подложки</label><span class="value-badge" id="opacityValue">0.05</span></div>
+            <input id="opacityRange" type="range" min="0" max="0.95" step="0.01" value="0.05" />
+          </div>
+
+          <div class="control">
+            <div class="label-row"><label for="tintRange">Оттенок подложки</label><span class="value-badge" id="tintValue">Белый</span></div>
+            <div class="tint-row"><span>Белый</span><input id="tintRange" type="range" min="0" max="1" step="1" value="0" /><span>Чёрный</span></div>
+          </div>
+
+          <div class="control">
+            <div class="label-row"><label for="weightRange">Толщина шрифта</label><span class="value-badge" id="weightValue">300</span></div>
+            <input id="weightRange" type="range" min="300" max="700" step="10" value="300" />
+          </div>
+        </section>
+
+        <section class="bento">
+          <h2 class="panel-title">Проверка</h2>
+          <p class="panel-copy">Алгоритм берёт пиксели под текстом, смешивает их с выбранной подложкой и проверяет контраст по формуле WCAG.</p>
+          <div class="action-stack">
+            <button class="primary-btn" id="checkBtn" type="button">Проверить результат</button>
+            <button class="secondary-btn" id="nextBtn" type="button" disabled>Следующий уровень</button>
+          </div>
+        </section>
+
+        <section class="bento">
+          <h2 class="panel-title">Подсказки</h2>
+          <ul class="hint-list">
+            <li><span class="dot"></span><span>Слишком прозрачная подложка оставляет фон агрессивным.</span></li>
+            <li><span class="dot"></span><span>Слишком плотная подложка проходит проще, но теряет стеклянную эстетику.</span></li>
+            <li><span class="dot"></span><span>Размытие помогает усреднить цветовые пики за текстом.</span></li>
+          </ul>
+        </section>
+      </aside>
+    </main>
+  </div>
+
+  <div class="modal-backdrop" id="modalBackdrop" role="presentation">
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="rulesTitle" aria-describedby="rulesText">
+      <button class="close-modal" id="closeModal" type="button" aria-label="Закрыть правила">×</button>
+      <h2 id="rulesTitle">Правила игры: Контраст и Читаемость</h2>
+      <div id="rulesText">
+        <p>Яркие фоновые изображения могут разрушить контраст типографики и сделать интерфейс недоступным.</p>
+        <p>Дизайнеры используют матовые стеклянные капсулы: размытие и прозрачную подложку, которые сохраняют стиль и помогают пройти стандарты доступности.</p>
+        <p>Ваша цель — подобрать размытие, непрозрачность, оттенок и толщину шрифта так, чтобы пройти строгую проверку WCAG AAA, не превращая подложку в полностью глухую плашку.</p>
+      </div>
+      <button class="primary-btn" id="startBtn" type="button">Понятно, начать</button>
+    </section>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true">
+    <div class="toast-top">
+      <div class="toast-icon" id="toastIcon">🎯</div>
+      <div>
+        <h3 id="toastTitle">Соответствие WCAG AAA 🎯</h3>
+        <p id="toastText">Отличная настройка: текст читается, а стеклянная эстетика сохранена.</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+
+    window.addEventListener('DOMContentLoaded', () => {
+      try{
+        const params = new URLSearchParams(window.location.search);
+        const urlEcoMode = params.get('eco');
+        if(urlEcoMode === 'enabled' || urlEcoMode === 'disabled'){
+          localStorage.setItem('ecoMode', urlEcoMode);
+        }
+        const savedEcoMode = urlEcoMode || localStorage.getItem('ecoMode');
+        document.body.classList.toggle('eco-mode', savedEcoMode === 'enabled');
+        const homeLink = document.querySelector('.nav-left .pill-btn');
+        if(homeLink){
+          homeLink.href = `./index.html?eco=${savedEcoMode === 'enabled' ? 'enabled' : 'disabled'}`;
+        }
+      }catch(error){}
+    });
+
+    (() => {
+      'use strict';
+
+      const state = {
+        level: 1,
+        seed: Math.floor(Math.random() * 1000000),
+        toastTimer: null,
+        ctxScale: 1
+      };
+
+      const els = {
+        levelBadge: document.getElementById('levelBadge'),
+        canvas: document.getElementById('artCanvas'),
+        stage: document.getElementById('stage'),
+        previewWrap: document.getElementById('previewWrap'),
+        capsule: document.getElementById('textCapsule'),
+        blur: document.getElementById('blurRange'),
+        opacity: document.getElementById('opacityRange'),
+        tint: document.getElementById('tintRange'),
+        weight: document.getElementById('weightRange'),
+        blurValue: document.getElementById('blurValue'),
+        opacityValue: document.getElementById('opacityValue'),
+        tintValue: document.getElementById('tintValue'),
+        weightValue: document.getElementById('weightValue'),
+        checkBtn: document.getElementById('checkBtn'),
+        nextBtn: document.getElementById('nextBtn'),
+        rulesBtn: document.getElementById('rulesBtn'),
+        modalBackdrop: document.getElementById('modalBackdrop'),
+        closeModal: document.getElementById('closeModal'),
+        startBtn: document.getElementById('startBtn'),
+        toast: document.getElementById('toast'),
+        toastIcon: document.getElementById('toastIcon'),
+        toastTitle: document.getElementById('toastTitle'),
+        toastText: document.getElementById('toastText')
+      };
+
+      const ctx = els.canvas.getContext('2d', { willReadFrequently: true });
+
+      function mulberry32(seed){
+        return function(){
+          let t = seed += 0x6D2B79F5;
+          t = Math.imul(t ^ (t >>> 15), t | 1);
+          t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+          return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+        };
+      }
+
+      function randBetween(rand, min, max){ return min + rand() * (max - min); }
+      function pick(rand, arr){ return arr[Math.floor(rand() * arr.length)]; }
+
+      function resizeCanvas(){
+        const rect = els.stage.getBoundingClientRect();
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        els.canvas.width = Math.max(1, Math.round(rect.width * dpr));
+        els.canvas.height = Math.max(1, Math.round(rect.height * dpr));
+        els.canvas.style.width = rect.width + 'px';
+        els.canvas.style.height = rect.height + 'px';
+        state.ctxScale = dpr;
+        drawProceduralArt();
+      }
+
+      function drawProceduralArt(){
+        const w = els.canvas.width;
+        const h = els.canvas.height;
+        const rand = mulberry32(state.seed);
+        const palettes = [
+          ['#071dff','#00d4ff','#ff2fb3','#fff01f','#6bff8b','#5b2cff'],
+          ['#ff5a00','#ffe600','#00f5d4','#0066ff','#b900ff','#ff2e63'],
+          ['#03ffb7','#1738ff','#ff36d3','#ffffff','#ffcf33','#111827'],
+          ['#7c3aed','#22d3ee','#f9a8d4','#fb7185','#a3e635','#0f172a']
+        ];
+        const colors = pick(rand, palettes);
+
+        const grad = ctx.createLinearGradient(0, 0, w, h);
+        for(let i=0;i<5;i++) grad.addColorStop(i/4, colors[(i + state.level) % colors.length]);
+        ctx.fillStyle = grad;
+        ctx.fillRect(0,0,w,h);
+
+        ctx.globalCompositeOperation = 'overlay';
+        for(let i=0;i<90;i++){
+          ctx.beginPath();
+          ctx.fillStyle = pick(rand, colors) + Math.floor(randBetween(rand, 70, 190)).toString(16).padStart(2,'0');
+          const x = randBetween(rand, -w*.1, w*1.1);
+          const y = randBetween(rand, -h*.1, h*1.1);
+          const r = randBetween(rand, 18, Math.min(w,h)*.18);
+          if(rand() > .45){
+            ctx.arc(x,y,r,0,Math.PI*2);
+          }else{
+            const sides = Math.floor(randBetween(rand, 3, 8));
+            for(let s=0;s<sides;s++){
+              const a = (Math.PI*2*s/sides) + randBetween(rand, -.3, .3);
+              const rr = r * randBetween(rand, .45, 1.25);
+              const px = x + Math.cos(a)*rr;
+              const py = y + Math.sin(a)*rr;
+              if(s===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+            }
+            ctx.closePath();
+          }
+          ctx.fill();
+        }
+
+        ctx.globalCompositeOperation = 'source-over';
+        for(let i=0;i<44;i++){
+          ctx.save();
+          ctx.translate(randBetween(rand, 0, w), randBetween(rand, 0, h));
+          ctx.rotate(randBetween(rand, 0, Math.PI*2));
+          ctx.strokeStyle = pick(rand, colors) + 'cc';
+          ctx.lineWidth = randBetween(rand, 2, 16) * state.ctxScale;
+          ctx.beginPath();
+          const len = randBetween(rand, w*.12, w*.62);
+          ctx.moveTo(-len/2, 0);
+          for(let k=0;k<6;k++) ctx.lineTo(-len/2 + len*k/5, randBetween(rand, -70, 70) * state.ctxScale);
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        const img = ctx.getImageData(0,0,w,h);
+        const data = img.data;
+        const noiseRand = mulberry32(state.seed + 9099);
+        for(let i=0;i<data.length;i+=4){
+          const n = (noiseRand() - .5) * 42;
+          data[i] = clamp(data[i] + n, 0, 255);
+          data[i+1] = clamp(data[i+1] + n, 0, 255);
+          data[i+2] = clamp(data[i+2] + n, 0, 255);
+        }
+        ctx.putImageData(img,0,0);
+
+        ctx.globalCompositeOperation = 'screen';
+        for(let i=0;i<9;i++){
+          const rg = ctx.createRadialGradient(randBetween(rand,0,w), randBetween(rand,0,h), 0, randBetween(rand,0,w), randBetween(rand,0,h), randBetween(rand, w*.12, w*.34));
+          rg.addColorStop(0, pick(rand, colors) + 'aa');
+          rg.addColorStop(1, 'rgba(255,255,255,0)');
+          ctx.fillStyle = rg;
+          ctx.fillRect(0,0,w,h);
+        }
+        ctx.globalCompositeOperation = 'source-over';
+      }
+
+      function clamp(v, min, max){ return Math.max(min, Math.min(max, v)); }
+
+      function applyControls(){
+        const blur = Number(els.blur.value);
+        const opacity = Number(els.opacity.value);
+        const tintIsBlack = Number(els.tint.value) === 1;
+        const weight = Number(els.weight.value);
+        const tint = tintIsBlack ? '0,0,0' : '255,255,255';
+        const text = tintIsBlack ? '255,255,255' : '13,17,30';
+
+        els.capsule.style.backdropFilter = `blur(${blur}px) saturate(160%)`;
+        els.capsule.style.webkitBackdropFilter = `blur(${blur}px) saturate(160%)`;
+        els.capsule.style.background = `rgba(${tint}, ${opacity})`;
+        els.capsule.style.color = `rgb(${text})`;
+        els.capsule.style.fontWeight = String(weight);
+
+        els.blurValue.textContent = `${blur} px`;
+        els.opacityValue.textContent = opacity.toFixed(2);
+        els.tintValue.textContent = tintIsBlack ? 'Чёрный' : 'Белый';
+        els.weightValue.textContent = String(weight);
+        els.nextBtn.disabled = true;
+      }
+
+      function srgbToLinear(channel){
+        const c = channel / 255;
+        return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+      }
+
+      function luminance(rgb){
+        return 0.2126 * srgbToLinear(rgb[0]) + 0.7152 * srgbToLinear(rgb[1]) + 0.0722 * srgbToLinear(rgb[2]);
+      }
+
+      function contrastRatio(a, b){
+        const l1 = luminance(a);
+        const l2 = luminance(b);
+        const hi = Math.max(l1, l2);
+        const lo = Math.min(l1, l2);
+        return (hi + 0.05) / (lo + 0.05);
+      }
+
+      function getCapsuleCanvasRect(){
+        const stageRect = els.stage.getBoundingClientRect();
+        const capRect = els.capsule.getBoundingClientRect();
+        const scale = state.ctxScale;
+        return {
+          x: Math.max(0, Math.floor((capRect.left - stageRect.left) * scale)),
+          y: Math.max(0, Math.floor((capRect.top - stageRect.top) * scale)),
+          w: Math.min(els.canvas.width, Math.floor(capRect.width * scale)),
+          h: Math.min(els.canvas.height, Math.floor(capRect.height * scale))
+        };
+      }
+
+      function blurredPixel(data, width, height, x, y, radius){
+        if(radius <= 1){
+          const i = (y * width + x) * 4;
+          return [data[i], data[i+1], data[i+2]];
+        }
+        const samples = Math.max(2, Math.min(9, Math.round(radius / 5)));
+        let r=0,g=0,b=0,count=0;
+        for(let yy=-samples; yy<=samples; yy++){
+          for(let xx=-samples; xx<=samples; xx++){
+            const dist = Math.sqrt(xx*xx + yy*yy) / samples;
+            if(dist <= 1.05){
+              const px = clamp(Math.round(x + xx * radius / samples), 0, width - 1);
+              const py = clamp(Math.round(y + yy * radius / samples), 0, height - 1);
+              const i = (py * width + px) * 4;
+              const weight = 1.15 - dist;
+              r += data[i] * weight; g += data[i+1] * weight; b += data[i+2] * weight;
+              count += weight;
+            }
+          }
+        }
+        return [r/count, g/count, b/count];
+      }
+
+      function evaluateResult(){
+        const rect = getCapsuleCanvasRect();
+        const image = ctx.getImageData(0,0,els.canvas.width,els.canvas.height);
+        const data = image.data;
+        const blurCss = Number(els.blur.value);
+        const radius = blurCss * state.ctxScale;
+        const opacity = Number(els.opacity.value);
+        const tintIsBlack = Number(els.tint.value) === 1;
+        const tint = tintIsBlack ? [0,0,0] : [255,255,255];
+        const text = tintIsBlack ? [255,255,255] : [13,17,30];
+        const weight = Number(els.weight.value);
+
+        const step = Math.max(4, Math.round(Math.min(rect.w, rect.h) / 42));
+        let total = 0;
+        let aaa = 0;
+        let aa = 0;
+        let ratioSum = 0;
+        const ratios = [];
+
+        const padX = Math.round(22 * state.ctxScale);
+        const padY = Math.round(18 * state.ctxScale);
+        const startX = clamp(rect.x + padX, 0, els.canvas.width - 1);
+        const endX = clamp(rect.x + rect.w - padX, 0, els.canvas.width);
+        const startY = clamp(rect.y + padY, 0, els.canvas.height - 1);
+        const endY = clamp(rect.y + rect.h - padY, 0, els.canvas.height);
+
+        for(let y=startY; y<endY; y+=step){
+          for(let x=startX; x<endX; x+=step){
+            const base = blurredPixel(data, els.canvas.width, els.canvas.height, x, y, radius);
+            const mixed = [
+              base[0] * (1 - opacity) + tint[0] * opacity,
+              base[1] * (1 - opacity) + tint[1] * opacity,
+              base[2] * (1 - opacity) + tint[2] * opacity
+            ];
+            const ratio = contrastRatio(text, mixed);
+            ratioSum += ratio;
+            ratios.push(ratio);
+            if(ratio >= 7) aaa++;
+            if(ratio >= 4.5) aa++;
+            total++;
+          }
+        }
+
+        ratios.sort((a,b)=>a-b);
+        const aaaCoverage = total ? aaa / total : 0;
+        const aaCoverage = total ? aa / total : 0;
+        const average = total ? ratioSum / total : 0;
+        const tenth = ratios.length ? ratios[Math.floor(ratios.length * .10)] : 0;
+        const fifth = ratios.length ? ratios[Math.floor(ratios.length * .05)] : 0;
+
+        const wcagCore = clamp((aaaCoverage * .58) + (clamp((tenth - 4.5) / 3.0, 0, 1) * .26) + (clamp((average - 5.8) / 2.5, 0, 1) * .16), 0, 1);
+        const aaCore = clamp((aaCoverage * .70) + (clamp((average - 4.1) / 2.2, 0, 1) * .30), 0, 1);
+        const glassPenalty = opacity > .80 ? clamp(1 - ((opacity - .80) / .15) * .72, .28, 1) : 1;
+        const lazyPenalty = opacity > .88 ? .55 : 1;
+        const clarityBonus = clamp((weight - 300) / 400, 0, 1) * 5;
+        const blurBalance = blurCss < 4 ? .82 : (blurCss > 34 ? .92 : 1);
+        const score = Math.round(clamp((wcagCore * 95 + clarityBonus) * glassPenalty * lazyPenalty * blurBalance, 0, 100));
+
+        let designation, icon, textMessage;
+        if(aaaCoverage >= .95 && fifth >= 6.75 && score >= 82){
+          designation = 'Соответствие WCAG AAA 🎯';
+          icon = '🎯';
+          textMessage = `Оценка: ${score} из 100. Отличная настройка: текст читается уверенно, а стеклянная эстетика сохранена.`;
+          els.nextBtn.disabled = false;
+        }else if(aaCoverage >= .92 && aaCore >= .76 && score >= 52){
+          designation = 'Соответствие WCAG AA 👍';
+          icon = '👍';
+          textMessage = `Оценка: ${score} из 100. Уже достаточно хорошо, но для строгого AAA нужно усилить читаемость без тяжёлой плашки.`;
+          els.nextBtn.disabled = false;
+        }else{
+          designation = 'Недоступно (Fail) 🛑';
+          icon = '🛑';
+          textMessage = `Оценка: ${score} из 100. Контраст нестабилен: попробуйте изменить оттенок, добавить размытие или немного увеличить непрозрачность.`;
+          els.nextBtn.disabled = true;
+        }
+        showToast(designation, textMessage, icon);
+      }
+
+      function showToast(title, text, icon){
+        clearTimeout(state.toastTimer);
+        els.toastTitle.textContent = title;
+        els.toastText.textContent = text;
+        els.toastIcon.textContent = icon;
+        els.toast.classList.add('show');
+        state.toastTimer = setTimeout(() => els.toast.classList.remove('show'), 6200);
+      }
+
+      function resetControls(){
+        els.blur.value = 0;
+        els.opacity.value = 0.05;
+        els.tint.value = 0;
+        els.weight.value = 300;
+        applyControls();
+      }
+
+      function nextLevel(){
+        state.level += 1;
+        state.seed = Math.floor(Math.random() * 1000000) + state.level * 777;
+        els.levelBadge.textContent = `Уровень ${state.level}`;
+        resetControls();
+        drawProceduralArt();
+        showToast('Новый уровень ✨', 'Фон полностью изменён. Найдите новый баланс стекла и читаемости.', '✨');
+      }
+
+      function openModal(){ els.modalBackdrop.classList.add('active'); }
+      function closeModal(){ els.modalBackdrop.classList.remove('active'); }
+
+      [els.blur, els.opacity, els.tint, els.weight].forEach(input => input.addEventListener('input', applyControls));
+      els.checkBtn.addEventListener('click', evaluateResult);
+      els.nextBtn.addEventListener('click', nextLevel);
+      els.rulesBtn.addEventListener('click', openModal);
+      els.closeModal.addEventListener('click', closeModal);
+      els.startBtn.addEventListener('click', closeModal);
+      els.modalBackdrop.addEventListener('click', (event) => {
+        if(event.target === els.modalBackdrop) closeModal();
+      });
+      window.addEventListener('resize', resizeCanvas);
+      window.addEventListener('keydown', (event) => {
+        if(event.key === 'Escape') closeModal();
+      });
+
+      applyControls();
+      resizeCanvas();
+      window.setTimeout(openModal, 260);
+    })();
+  </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1559c290f16ee7e',t:'MTc4MzA3ODc3MA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
