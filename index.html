@@ -19,7 +19,8 @@
       --shadow:0 24px 70px rgba(26,31,64,.22);
       --shadow-soft:0 10px 34px rgba(26,31,64,.15);
       --radius:28px;
-      --font-heading:"Gill Sans", "Gill Sans MT", "Segoe UI Semibold", sans-serif;
+      /* Кириллически безопасный стек: Gill Sans на iPhone искажает русские заголовки. */
+      --font-heading:"Helvetica Neue", "Arial", "Segoe UI", sans-serif;
       --font-body:"Arial", "Helvetica Neue", sans-serif;
       --font-button:"Gill Sans", "Segoe UI", sans-serif;
     }
@@ -78,7 +79,7 @@
     h1,h2,h3,.hub-title{
       margin:0;
       font-family:var(--font-heading);
-      letter-spacing:-0.035em;
+      letter-spacing:-0.02em;
       font-weight:800;
       line-height:1.02;
     }
@@ -386,7 +387,7 @@
       -webkit-backdrop-filter:blur(16px) saturate(160%);
       box-shadow:0 18px 50px rgba(0,0,0,.16);
     }
-    .glass-caption strong{ display:block; font-family:var(--font-heading); font-size:20px; letter-spacing:-0.035em; color:#101423; line-height:1.05; }
+    .glass-caption strong{ display:block; font-family:var(--font-heading); font-size:20px; letter-spacing:-0.02em; color:#101423; line-height:1.05; }
     .glass-caption span{ display:block; margin-top:8px; font-size:12px; color:rgba(16,20,35,.70); }
     .blueprint-preview::before{
       content:"";
