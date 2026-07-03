@@ -616,98 +616,99 @@
     }
 
 
-    /* ---- Maximum mobile scroll performance mode (keeps visual identity, removes scroll jank) ---- */
+    /* ---- Maximum mobile scroll performance mode: active ONLY in eco-mode ---- */
     @media (max-width: 860px){
-      body{
+      body.eco-mode{
         animation:none !important;
         background-position:50% 50% !important;
         background-size:180% 180% !important;
       }
-      body::before,
-      body::after{
+      body.eco-mode::before,
+      body.eco-mode::after{
         display:none !important;
       }
-      .topbar,
-      .bento,
-      .glass,
-      .pill-btn,
-      .level-pill,
-      .decor-pill,
-      .layer-box,
-      .value-badge,
-      .secondary-btn,
-      .modal,
-      .toast,
-      .close-modal,
-      .mobile-dpad,
-      .dpad-btn,
-      .ghost-toggle,
-      .brand-pill,
-      .settings-btn,
-      .filter-btn,
-      .start-pill,
-      .preview-wrap,
-      .settings-row,
-      .glass-caption{
+      body.eco-mode .topbar,
+      body.eco-mode .bento,
+      body.eco-mode .glass,
+      body.eco-mode .pill-btn,
+      body.eco-mode .level-pill,
+      body.eco-mode .decor-pill,
+      body.eco-mode .layer-box,
+      body.eco-mode .value-badge,
+      body.eco-mode .secondary-btn,
+      body.eco-mode .modal,
+      body.eco-mode .toast,
+      body.eco-mode .close-modal,
+      body.eco-mode .mobile-dpad,
+      body.eco-mode .dpad-btn,
+      body.eco-mode .ghost-toggle,
+      body.eco-mode .brand-pill,
+      body.eco-mode .settings-btn,
+      body.eco-mode .filter-btn,
+      body.eco-mode .start-pill,
+      body.eco-mode .preview-wrap,
+      body.eco-mode .settings-row,
+      body.eco-mode .glass-caption{
         backdrop-filter:none !important;
         -webkit-backdrop-filter:none !important;
         background:rgba(255,255,255,.82) !important;
         box-shadow:0 6px 18px rgba(26,31,64,.10) !important;
       }
-      .modal-backdrop{
+      body.eco-mode .modal-backdrop{
         backdrop-filter:none !important;
         -webkit-backdrop-filter:none !important;
         background:rgba(22,25,54,.16) !important;
       }
-      .hub-header::before,
-      .game-card::before,
-      .contrast-preview::before,
-      .blueprint-preview::before,
-      .card-zone::before,
-      .shadow-card::after,
-      .canvas-vignette{
+      body.eco-mode .hub-header::before,
+      body.eco-mode .game-card::before,
+      body.eco-mode .contrast-preview::before,
+      body.eco-mode .blueprint-preview::before,
+      body.eco-mode .card-zone::before,
+      body.eco-mode .shadow-card::after,
+      body.eco-mode .canvas-vignette{
         display:none !important;
       }
-      .hub-header,
-      .game-card,
-      .bento,
-      .workbench,
-      .arena,
-      .side .bento,
-      .check-panel,
-      .white-canvas,
-      .workspace,
-      .stage,
-      .product-card{
+      body.eco-mode .hub-header,
+      body.eco-mode .game-card,
+      body.eco-mode .bento,
+      body.eco-mode .workbench,
+      body.eco-mode .arena,
+      body.eco-mode .side .bento,
+      body.eco-mode .check-panel,
+      body.eco-mode .white-canvas,
+      body.eco-mode .workspace,
+      body.eco-mode .stage,
+      body.eco-mode .product-card{
         contain:layout paint;
       }
-      .shadow-preview-box,
-      .wire-card,
-      .product-card,
-      .product-image,
-      .product-glyph,
-      .white-canvas,
-      .shadow-card,
-      .cart-button,
-      .mini-icon,
-      .price-badge,
-      .rating-badge{
+      body.eco-mode .shadow-preview-box,
+      body.eco-mode .wire-card,
+      body.eco-mode .product-card,
+      body.eco-mode .product-image,
+      body.eco-mode .product-glyph,
+      body.eco-mode .white-canvas,
+      body.eco-mode .shadow-card,
+      body.eco-mode .cart-button,
+      body.eco-mode .mini-icon,
+      body.eco-mode .price-badge,
+      body.eco-mode .rating-badge{
         box-shadow:0 8px 20px rgba(26,31,64,.10) !important;
       }
-      .hero,
-      .hub-header,
-      .meta-row,
-      .filter-row,
-      .game-card,
-      .bento,
-      .footer-note,
-      .toast.show{
+      body.eco-mode .hero,
+      body.eco-mode .hub-header,
+      body.eco-mode .meta-row,
+      body.eco-mode .filter-row,
+      body.eco-mode .game-card,
+      body.eco-mode .bento,
+      body.eco-mode .footer-note,
+      body.eco-mode .toast.show{
         animation:none !important;
       }
-      *{
+      body.eco-mode *{
         scroll-behavior:auto !important;
       }
     }
+
   </style>
 </head>
 <body>
@@ -998,5 +999,5 @@
       }
     })();
   </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a156b05f5876b260',t:'MTc4MzA5MDA4Mw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
