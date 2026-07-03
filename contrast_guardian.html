@@ -755,12 +755,19 @@
 
 
 
-    /* Contrast Guardian mobile fixes: prevent sticky toolbar smear; keep glass in full mode. */
+    /* Contrast Guardian mobile fix: keep sticky toolbar, remove only the blur layer that smears over canvas. */
     @media (max-width: 860px){
       .topbar{
-        position:relative !important;
-        top:auto !important;
-        transform:none !important;
+        position:sticky !important;
+        top:8px !important;
+        transform:translateZ(0) !important;
+        backface-visibility:hidden;
+        isolation:isolate;
+        contain:paint;
+        background:rgba(255,255,255,.78) !important;
+        backdrop-filter:none !important;
+        -webkit-backdrop-filter:none !important;
+        box-shadow:0 10px 28px rgba(28,36,80,.14) !important;
       }
       body.eco-mode .topbar{
         background:rgba(255,255,255,.92) !important;
@@ -769,10 +776,19 @@
       }
       body.eco-mode .text-capsule{
         transform:none !important;
+        border-radius:24px !important;
+        overflow:hidden !important;
+        background:var(--capsule-bg) !important;
+        backdrop-filter:none !important;
+        -webkit-backdrop-filter:none !important;
+        box-shadow:0 12px 28px rgba(0,0,0,.10), inset 0 0 0 1px rgba(255,255,255,.32) !important;
       }
       body.eco-mode .text-capsule::before{
-        filter:none !important;
+        display:none !important;
       }
+    }
+    @media (max-width: 600px){
+      .topbar{ top:6px !important; }
     }
 
 
@@ -1293,5 +1309,5 @@
       window.setTimeout(openModal, 260);
     })();
   </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1572d417e65e192',t:'MTc4MzA5NTE5OA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
