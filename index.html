@@ -4,7 +4,6 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Академия Интерфейсов</title>
-  
   <style>
     :root{
       --glass-bg: rgba(255,255,255,.45);
@@ -536,6 +535,12 @@
       background-position:50% 50% !important;
     }
     body.eco-mode::before, body.eco-mode::after{ display:none !important; }
+    body.eco-mode .hub-header::before,
+    body.eco-mode .game-card::before,
+    body.eco-mode .contrast-preview::before,
+    body.eco-mode .blueprint-preview::before{
+      display:none !important;
+    }
     body.eco-mode .glass,
     body.eco-mode .brand-pill,
     body.eco-mode .settings-btn,
@@ -544,13 +549,33 @@
     body.eco-mode .preview-wrap,
     body.eco-mode .glass-caption,
     body.eco-mode .settings-row{
-      backdrop-filter:blur(4px) !important;
-      -webkit-backdrop-filter:blur(4px) !important;
-      background:rgba(255,255,255,.88) !important;
-      box-shadow:0 10px 28px rgba(26,31,64,.12) !important;
+      backdrop-filter:none !important;
+      -webkit-backdrop-filter:none !important;
+      background:rgba(255,255,255,.90) !important;
+      box-shadow:0 8px 20px rgba(26,31,64,.10) !important;
     }
-    body.eco-mode .game-card::before{ display:none; }
-    body.eco-mode *{ animation-duration:.01ms !important; animation-iteration-count:1 !important; }
+    body.eco-mode .shadow-preview-box,
+    body.eco-mode .wire-card,
+    body.eco-mode .glass-caption,
+    body.eco-mode .contrast-preview,
+    body.eco-mode .shadow-preview-stage,
+    body.eco-mode .blueprint-preview{
+      box-shadow:none !important;
+      filter:none !important;
+    }
+    body.eco-mode .contrast-preview{
+      background:linear-gradient(135deg, #4f7cff, #d66fff) !important;
+    }
+    body.eco-mode .blueprint-preview{
+      background:#fff !important;
+    }
+    body.eco-mode *,
+    body.eco-mode *::before,
+    body.eco-mode *::after{
+      animation:none !important;
+      transition:none !important;
+      filter:none !important;
+    }
 
     @media (max-width: 980px){
       .hub-header{ min-height:auto; }
@@ -805,11 +830,16 @@
       function shouldAutoEco(){
         const mobileViewport = window.matchMedia('(max-width: 860px)').matches;
         const mobileUA = /Android|iPhone|iPad|iPod|Mobile|Tablet|Windows Phone/i.test(navigator.userAgent || '');
+        if(mobileViewport || mobileUA) return true;
+
         const weakCPU = typeof navigator.hardwareConcurrency === 'number' && navigator.hardwareConcurrency <= 4;
+        if(weakCPU) return true;
+
         const lowRAM = typeof navigator.deviceMemory === 'number' && navigator.deviceMemory <= 4;
+        if(lowRAM) return true;
+
         const renderer = getWebGLRenderer();
-        const weakGPU = /Intel|AMD Radeon|HD Graphics|SwiftShader/i.test(renderer);
-        return mobileViewport || mobileUA || weakCPU || lowRAM || weakGPU;
+        return /Intel|AMD Radeon|HD Graphics|SwiftShader/i.test(renderer);
       }
 
       function syncGameLinks(enabled){
@@ -857,7 +887,7 @@
       ecoSwitch.addEventListener('change', () => setEcoMode(ecoSwitch.checked, true));
       bootEcoMode();
 
-      if(!reduceMotion){
+      if(!reduceMotion && !document.body.classList.contains('eco-mode')){
         cards.forEach(card => {
           card.addEventListener('pointermove', event => {
             const rect = card.getBoundingClientRect();
@@ -874,5 +904,5 @@
       }
     })();
   </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1559888ca2aee7e',t:'MTc4MzA3ODYyMQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
