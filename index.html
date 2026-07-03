@@ -614,6 +614,100 @@
       .wire-img{ width:56px; border-radius:14px; }
       .settings-modal{ padding:24px 20px 20px; border-radius:24px; }
     }
+
+
+    /* ---- Maximum mobile scroll performance mode (keeps visual identity, removes scroll jank) ---- */
+    @media (max-width: 860px){
+      body{
+        animation:none !important;
+        background-position:50% 50% !important;
+        background-size:180% 180% !important;
+      }
+      body::before,
+      body::after{
+        display:none !important;
+      }
+      .topbar,
+      .bento,
+      .glass,
+      .pill-btn,
+      .level-pill,
+      .decor-pill,
+      .layer-box,
+      .value-badge,
+      .secondary-btn,
+      .modal,
+      .toast,
+      .close-modal,
+      .mobile-dpad,
+      .dpad-btn,
+      .ghost-toggle,
+      .brand-pill,
+      .settings-btn,
+      .filter-btn,
+      .start-pill,
+      .preview-wrap,
+      .settings-row,
+      .glass-caption{
+        backdrop-filter:none !important;
+        -webkit-backdrop-filter:none !important;
+        background:rgba(255,255,255,.82) !important;
+        box-shadow:0 6px 18px rgba(26,31,64,.10) !important;
+      }
+      .modal-backdrop{
+        backdrop-filter:none !important;
+        -webkit-backdrop-filter:none !important;
+        background:rgba(22,25,54,.16) !important;
+      }
+      .hub-header::before,
+      .game-card::before,
+      .contrast-preview::before,
+      .blueprint-preview::before,
+      .card-zone::before,
+      .shadow-card::after,
+      .canvas-vignette{
+        display:none !important;
+      }
+      .hub-header,
+      .game-card,
+      .bento,
+      .workbench,
+      .arena,
+      .side .bento,
+      .check-panel,
+      .white-canvas,
+      .workspace,
+      .stage,
+      .product-card{
+        contain:layout paint;
+      }
+      .shadow-preview-box,
+      .wire-card,
+      .product-card,
+      .product-image,
+      .product-glyph,
+      .white-canvas,
+      .shadow-card,
+      .cart-button,
+      .mini-icon,
+      .price-badge,
+      .rating-badge{
+        box-shadow:0 8px 20px rgba(26,31,64,.10) !important;
+      }
+      .hero,
+      .hub-header,
+      .meta-row,
+      .filter-row,
+      .game-card,
+      .bento,
+      .footer-note,
+      .toast.show{
+        animation:none !important;
+      }
+      *{
+        scroll-behavior:auto !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -904,5 +998,5 @@
       }
     })();
   </script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a156b05f5876b260',t:'MTc4MzA5MDA4Mw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
