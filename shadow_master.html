@@ -249,6 +249,7 @@
     }
 
     .white-canvas{
+      contain:layout paint;
       background:#ffffff;
       border-radius:20px;
       min-height:510px;
@@ -274,6 +275,7 @@
       z-index:2;
     }
     .card-zone{
+      contain:layout;
       display:grid;
       place-items:center;
       padding:28px;
@@ -657,23 +659,36 @@
     body.eco-mode .secondary-btn,
     body.eco-mode .modal,
     body.eco-mode .toast,
-    body.eco-mode .close-modal,
-    body.eco-mode .text-capsule,
-    body.eco-mode .mobile-dpad,
-    body.eco-mode .dpad-btn,
-    body.eco-mode .ghost-toggle{
-      backdrop-filter:blur(4px) !important;
-      -webkit-backdrop-filter:blur(4px) !important;
+    body.eco-mode .close-modal{
+      backdrop-filter:none !important;
+      -webkit-backdrop-filter:none !important;
       background:rgba(255,255,255,.88) !important;
-      box-shadow:0 10px 28px rgba(26,31,64,.12) !important;
+      box-shadow:0 8px 20px rgba(26,31,64,.10) !important;
     }
     body.eco-mode .modal-backdrop{
-      backdrop-filter:blur(4px) !important;
-      -webkit-backdrop-filter:blur(4px) !important;
+      backdrop-filter:none !important;
+      -webkit-backdrop-filter:none !important;
     }
-    body.eco-mode *{
-      animation-duration:.01ms !important;
-      animation-iteration-count:1 !important;
+    body.eco-mode .white-canvas{
+      box-shadow:inset 0 0 0 1px rgba(0,0,0,.06) !important;
+    }
+    body.eco-mode .card-zone::before,
+    body.eco-mode .shadow-card::after{
+      display:none !important;
+    }
+    body.eco-mode .target-card{
+      animation:none !important;
+    }
+    body.eco-mode .shadow-card{
+      transition:none !important;
+      /* Gameplay-critical: JS box-shadow remains untouched. */
+    }
+    body.eco-mode *,
+    body.eco-mode *::before,
+    body.eco-mode *::after{
+      animation:none !important;
+      transition:none !important;
+      filter:none !important;
     }
   </style>
 </head>
@@ -987,6 +1002,15 @@
         els.nextBtn.disabled = true;
       }
 
+      let controlsFrame = null;
+      function scheduleApplyPlayerControls(){
+        if(controlsFrame !== null) return;
+        controlsFrame = requestAnimationFrame(() => {
+          controlsFrame = null;
+          applyPlayerControls();
+        });
+      }
+
       function showToast(title, text, icon){
         clearTimeout(privateGame.getToastTimer());
         els.toastTitle.textContent = title;
@@ -1044,7 +1068,7 @@
       function openModal(){ els.modalBackdrop.classList.add('active'); }
       function closeModal(){ els.modalBackdrop.classList.remove('active'); }
 
-      els.inputs.forEach(input => input.addEventListener('input', applyPlayerControls));
+      els.inputs.forEach(input => input.addEventListener('input', scheduleApplyPlayerControls));
       els.checkBtn.addEventListener('click', checkResult);
       els.nextBtn.addEventListener('click', nextLevel);
       els.rulesBtn.addEventListener('click', openModal);
@@ -1062,5 +1086,5 @@
       window.setTimeout(openModal, 260);
     })();
   </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a15598b3382aee7e',t:'MTc4MzA3ODYyOA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1569eda8e8fee5f',t:'MTc4MzA4OTM2Ng=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>

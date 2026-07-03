@@ -229,6 +229,7 @@
 
     .workspace{
       position:relative;
+      contain:layout paint;
       min-height:530px;
       border-radius:20px;
       background:#ffffff;
@@ -309,6 +310,7 @@
 
     .card-stack{
       position:relative;
+      contain:layout paint;
       z-index:1;
       width:min(420px, 100%);
     }
@@ -317,6 +319,7 @@
     .card-stack-widget{ width:min(310px, 100%); }
     .product-card{
       position:relative;
+      contain:layout paint;
       z-index:1;
       width:100%;
       border-radius:34px;
@@ -357,15 +360,12 @@
       position:absolute;
       inset:0;
       z-index:4;
-      opacity:0;
-      visibility:hidden;
+      display:none;
+      opacity:.35;
       pointer-events:none;
-      transition:opacity .18s ease, visibility 0s linear .18s;
     }
     .ghost-card.visible{
-      opacity:.35;
-      visibility:visible;
-      transition-delay:0s;
+      display:grid;
     }
     .ghost-card *{ pointer-events:none !important; }
     .selectable{
@@ -378,12 +378,12 @@
       border-radius:16px;
       cursor:pointer;
       user-select:none;
-      will-change:transform;
     }
     .selectable:hover{ outline-color:rgba(36,92,255,.20); }
     .selectable.selected{
       outline-color:rgba(36,92,255,.92);
       box-shadow:0 0 0 7px rgba(36,92,255,.12);
+      will-change:transform;
     }
     .product-image{
       grid-area:image;
@@ -827,22 +827,44 @@
     body.eco-mode .modal,
     body.eco-mode .toast,
     body.eco-mode .close-modal,
-    body.eco-mode .text-capsule,
     body.eco-mode .mobile-dpad,
     body.eco-mode .dpad-btn,
     body.eco-mode .ghost-toggle{
-      backdrop-filter:blur(4px) !important;
-      -webkit-backdrop-filter:blur(4px) !important;
+      backdrop-filter:none !important;
+      -webkit-backdrop-filter:none !important;
       background:rgba(255,255,255,.88) !important;
-      box-shadow:0 10px 28px rgba(26,31,64,.12) !important;
+      box-shadow:0 8px 20px rgba(26,31,64,.10) !important;
     }
     body.eco-mode .modal-backdrop{
-      backdrop-filter:blur(4px) !important;
-      -webkit-backdrop-filter:blur(4px) !important;
+      backdrop-filter:none !important;
+      -webkit-backdrop-filter:none !important;
     }
-    body.eco-mode *{
-      animation-duration:.01ms !important;
-      animation-iteration-count:1 !important;
+    body.eco-mode .workspace,
+    body.eco-mode .product-card,
+    body.eco-mode .product-image,
+    body.eco-mode .product-glyph,
+    body.eco-mode .cart-button,
+    body.eco-mode .mini-icon,
+    body.eco-mode .price-badge,
+    body.eco-mode .rating-badge{
+      box-shadow:none !important;
+      filter:none !important;
+    }
+    body.eco-mode .workspace::before{
+      opacity:.55;
+      background-size:32px 32px, 32px 32px, 128px 128px, 128px 128px !important;
+    }
+    body.eco-mode .selectable,
+    body.eco-mode .selectable.selected{
+      transition:none !important;
+      box-shadow:none !important;
+    }
+    body.eco-mode *,
+    body.eco-mode *::before,
+    body.eco-mode *::after{
+      animation:none !important;
+      transition:none !important;
+      filter:none !important;
     }
   </style>
 </head>
@@ -1344,5 +1366,5 @@
       window.setTimeout(openModal, 260);
     })();
   </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a15598e429eaee7e',t:'MTc4MzA3ODYzNg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1566dcb8ac2ed20',t:'MTc4MzA4NzM1Ng=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>

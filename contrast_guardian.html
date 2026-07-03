@@ -614,7 +614,13 @@
     }
     body.eco-mode .text-capsule{
       /* Gameplay-critical: background opacity and blur are controlled by JS sliders. */
-      box-shadow:0 24px 70px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.28);
+      box-shadow:0 16px 34px rgba(0,0,0,.12), inset 0 1px 0 rgba(255,255,255,.22);
+    }
+    body.eco-mode .canvas-vignette{
+      display:none !important;
+    }
+    body.eco-mode canvas{
+      image-rendering:auto;
     }
     body.eco-mode *{
       animation-duration:.01ms !important;
@@ -805,10 +811,33 @@
 
       function randBetween(rand, min, max){ return min + rand() * (max - min); }
       function pick(rand, arr){ return arr[Math.floor(rand() * arr.length)]; }
+      function isEcoMode(){ return document.body.classList.contains('eco-mode'); }
+      function isMobileMode(){ return window.matchMedia('(max-width: 860px)').matches; }
+      function performanceProfile(){
+        const light = isEcoMode() || isMobileMode();
+        return Object.freeze({
+          light,
+          maxCanvasWidth: light ? 520 : 1400,
+          maxCanvasHeight: light ? 560 : 1200,
+          shapeCount: light ? 24 : 90,
+          lineCount: light ? 12 : 44,
+          glowCount: light ? 3 : 9,
+          addNoise: !light,
+          maxBlurSamples: light ? 5 : 9,
+          sampleDivisor: light ? 22 : 42
+        });
+      }
 
       function resizeCanvas(){
         const rect = els.stage.getBoundingClientRect();
-        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        const profile = performanceProfile();
+        const nativeDpr = profile.light ? 1 : Math.min(window.devicePixelRatio || 1, 2);
+        const boundedDpr = Math.min(
+          nativeDpr,
+          profile.maxCanvasWidth / Math.max(1, rect.width),
+          profile.maxCanvasHeight / Math.max(1, rect.height)
+        );
+        const dpr = Math.max(.72, boundedDpr);
         els.canvas.width = Math.max(1, Math.round(rect.width * dpr));
         els.canvas.height = Math.max(1, Math.round(rect.height * dpr));
         els.canvas.style.width = rect.width + 'px';
@@ -818,6 +847,7 @@
       }
 
       function drawProceduralArt(){
+        const profile = performanceProfile();
         const w = els.canvas.width;
         const h = els.canvas.height;
         const rand = mulberry32(state.seed);
@@ -835,7 +865,7 @@
         ctx.fillRect(0,0,w,h);
 
         ctx.globalCompositeOperation = 'overlay';
-        for(let i=0;i<90;i++){
+        for(let i=0;i<profile.shapeCount;i++){
           ctx.beginPath();
           ctx.fillStyle = pick(rand, colors) + Math.floor(randBetween(rand, 70, 190)).toString(16).padStart(2,'0');
           const x = randBetween(rand, -w*.1, w*1.1);
@@ -858,7 +888,7 @@
         }
 
         ctx.globalCompositeOperation = 'source-over';
-        for(let i=0;i<44;i++){
+        for(let i=0;i<profile.lineCount;i++){
           ctx.save();
           ctx.translate(randBetween(rand, 0, w), randBetween(rand, 0, h));
           ctx.rotate(randBetween(rand, 0, Math.PI*2));
@@ -872,19 +902,21 @@
           ctx.restore();
         }
 
-        const img = ctx.getImageData(0,0,w,h);
-        const data = img.data;
-        const noiseRand = mulberry32(state.seed + 9099);
-        for(let i=0;i<data.length;i+=4){
-          const n = (noiseRand() - .5) * 42;
-          data[i] = clamp(data[i] + n, 0, 255);
-          data[i+1] = clamp(data[i+1] + n, 0, 255);
-          data[i+2] = clamp(data[i+2] + n, 0, 255);
+        if(profile.addNoise){
+          const img = ctx.getImageData(0,0,w,h);
+          const data = img.data;
+          const noiseRand = mulberry32(state.seed + 9099);
+          for(let i=0;i<data.length;i+=4){
+            const n = (noiseRand() - .5) * 42;
+            data[i] = clamp(data[i] + n, 0, 255);
+            data[i+1] = clamp(data[i+1] + n, 0, 255);
+            data[i+2] = clamp(data[i+2] + n, 0, 255);
+          }
+          ctx.putImageData(img,0,0);
         }
-        ctx.putImageData(img,0,0);
 
         ctx.globalCompositeOperation = 'screen';
-        for(let i=0;i<9;i++){
+        for(let i=0;i<profile.glowCount;i++){
           const rg = ctx.createRadialGradient(randBetween(rand,0,w), randBetween(rand,0,h), 0, randBetween(rand,0,w), randBetween(rand,0,h), randBetween(rand, w*.12, w*.34));
           rg.addColorStop(0, pick(rand, colors) + 'aa');
           rg.addColorStop(1, 'rgba(255,255,255,0)');
@@ -951,7 +983,8 @@
           const i = (y * width + x) * 4;
           return [data[i], data[i+1], data[i+2]];
         }
-        const samples = Math.max(2, Math.min(9, Math.round(radius / 5)));
+        const maxSamples = performanceProfile().maxBlurSamples;
+        const samples = Math.max(2, Math.min(maxSamples, Math.round(radius / 5)));
         let r=0,g=0,b=0,count=0;
         for(let yy=-samples; yy<=samples; yy++){
           for(let xx=-samples; xx<=samples; xx++){
@@ -980,8 +1013,9 @@
         const tint = tintIsBlack ? [0,0,0] : [255,255,255];
         const text = tintIsBlack ? [255,255,255] : [13,17,30];
         const weight = Number(els.weight.value);
+        const profile = performanceProfile();
 
-        const step = Math.max(4, Math.round(Math.min(rect.w, rect.h) / 42));
+        const step = Math.max(profile.light ? 8 : 4, Math.round(Math.min(rect.w, rect.h) / profile.sampleDivisor));
         let total = 0;
         let aaa = 0;
         let aa = 0;
@@ -1085,7 +1119,11 @@
       els.modalBackdrop.addEventListener('click', (event) => {
         if(event.target === els.modalBackdrop) closeModal();
       });
-      window.addEventListener('resize', resizeCanvas);
+      let resizeTimer = null;
+      window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(resizeCanvas, isEcoMode() || isMobileMode() ? 220 : 90);
+      });
       window.addEventListener('keydown', (event) => {
         if(event.key === 'Escape') closeModal();
       });
@@ -1095,5 +1133,5 @@
       window.setTimeout(openModal, 260);
     })();
   </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1559c290f16ee7e',t:'MTc4MzA3ODc3MA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
