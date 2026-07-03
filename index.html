@@ -19,8 +19,8 @@
       --shadow:0 24px 70px rgba(26,31,64,.22);
       --shadow-soft:0 10px 34px rgba(26,31,64,.15);
       --radius:28px;
-      /* Кириллически безопасный стек: Gill Sans на iPhone искажает русские заголовки. */
-      --font-heading:"Helvetica Neue", "Arial", "Segoe UI", sans-serif;
+      /* Кириллически безопасный системный стек без чрезмерной жирности на iPhone. */
+      --font-heading:-apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", "Arial", sans-serif;
       --font-body:"Arial", "Helvetica Neue", sans-serif;
       --font-button:"Gill Sans", "Segoe UI", sans-serif;
     }
@@ -79,8 +79,8 @@
     h1,h2,h3,.hub-title{
       margin:0;
       font-family:var(--font-heading);
-      letter-spacing:-0.02em;
-      font-weight:800;
+      letter-spacing:-0.025em;
+      font-weight:700;
       line-height:1.02;
     }
     p,li,.game-summary,.eyebrow,.settings-copy,.empty-state p,.footer-note{
@@ -190,6 +190,7 @@
     .hub-title{
       color:var(--ink);
       font-size:clamp(42px, 7vw, 86px);
+      font-weight:700;
     }
     .hub-subtitle{
       margin:14px 0 0;
@@ -292,7 +293,7 @@
       font-family:var(--font-button);
       font-weight:600;
     }
-    .game-card h2{ font-size:clamp(26px, 3.6vw, 44px); color:var(--ink); line-height:1; }
+    .game-card h2{ font-size:clamp(26px, 3.6vw, 44px); color:var(--ink); line-height:1; font-weight:700; }
     .game-summary{ margin:14px 0 18px; color:rgba(29,29,31,.72); font-size:15px; }
     .tag-list{ display:flex; flex-wrap:wrap; gap:8px; padding:0; margin:0 0 20px; list-style:none; }
     .tag-list li{
@@ -387,7 +388,7 @@
       -webkit-backdrop-filter:blur(16px) saturate(160%);
       box-shadow:0 18px 50px rgba(0,0,0,.16);
     }
-    .glass-caption strong{ display:block; font-family:var(--font-heading); font-size:20px; letter-spacing:-0.02em; color:#101423; line-height:1.05; }
+    .glass-caption strong{ display:block; font-family:var(--font-heading); font-size:20px; letter-spacing:-0.02em; font-weight:700; color:#101423; line-height:1.05; }
     .glass-caption span{ display:block; margin-top:8px; font-size:12px; color:rgba(16,20,35,.70); }
     .blueprint-preview::before{
       content:"";
