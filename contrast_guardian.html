@@ -198,8 +198,8 @@
       min-height:590px;
       border-radius:20px;
       overflow:hidden;
-      background:#111;
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,.32), 0 20px 55px rgba(14,18,48,.18);
+      background:transparent;
+      box-shadow:0 20px 55px rgba(14,18,48,.18);
       isolation:isolate;
     }
     canvas{
@@ -210,11 +210,7 @@
       display:block;
     }
     .canvas-vignette{
-      position:absolute;
-      inset:0;
-      pointer-events:none;
-      background: radial-gradient(circle at 50% 45%, transparent 0%, rgba(0,0,0,.08) 65%, rgba(0,0,0,.18) 100%);
-      z-index:1;
+      display:none;
     }
     .preview-wrap{
       position:absolute;
@@ -276,23 +272,7 @@
       -webkit-font-smoothing:antialiased;
       text-rendering:geometricPrecision;
     }
-    .stage-caption{
-      position:absolute;
-      left:16px;
-      right:16px;
-      bottom:16px;
-      z-index:3;
-      display:flex;
-      justify-content:space-between;
-      gap:10px;
-      color:rgba(255,255,255,.88);
-      font-size:var(--fs-2xs);
-      font-family: "Segoe UI", "Arial", sans-serif !important;
-      font-weight: 500 !important;
-      letter-spacing: normal !important;
-      text-shadow:0 2px 18px rgba(0,0,0,.38);
-      pointer-events:none;
-    }
+    .stage-caption{ display:none; }
 
     .panel-title{
       margin:0 0 4px;
@@ -868,10 +848,7 @@
               <p>Яркие изображения часто ломают типографику. Хороший дизайнер подбирает размытие, прозрачность и толщину шрифта так, чтобы интерфейс был и красивым, и доступным.</p>
             </article>
           </div>
-          <div class="stage-caption" aria-hidden="true">
-            <span>сложная процедурная сцена</span>
-            <span>стеклянная капсула</span>
-          </div>
+
         </div>
       </section>
 
@@ -1041,8 +1018,8 @@
         const dpr = Math.max(.72, boundedDpr);
         els.canvas.width = Math.max(1, Math.round(rect.width * dpr));
         els.canvas.height = Math.max(1, Math.round(rect.height * dpr));
-        els.canvas.style.width = rect.width + 'px';
-        els.canvas.style.height = rect.height + 'px';
+        els.canvas.style.width = '100%';
+        els.canvas.style.height = '100%';
         state.ctxScale = dpr;
         drawProceduralArt();
       }
@@ -1321,13 +1298,30 @@
       });
       let resizeTimer = null;
       let lastViewportWidth = window.innerWidth;
+      function scheduleCanvasResize(delay = 90){
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(resizeCanvas, delay);
+      }
       window.addEventListener('resize', () => {
         const widthDelta = Math.abs(window.innerWidth - lastViewportWidth);
         if((isEcoMode() || isMobileMode()) && widthDelta < 24) return;
         lastViewportWidth = window.innerWidth;
-        clearTimeout(resizeTimer);
-        resizeTimer = setTimeout(resizeCanvas, isEcoMode() || isMobileMode() ? 260 : 90);
+        scheduleCanvasResize(isEcoMode() || isMobileMode() ? 260 : 90);
       });
+      if('ResizeObserver' in window){
+        let observedWidth = 0;
+        let observedHeight = 0;
+        const stageObserver = new ResizeObserver(entries => {
+          const rect = entries[0].contentRect;
+          const widthDelta = Math.abs(rect.width - observedWidth);
+          const heightDelta = Math.abs(rect.height - observedHeight);
+          if(widthDelta < 1 && heightDelta < 1) return;
+          observedWidth = rect.width;
+          observedHeight = rect.height;
+          scheduleCanvasResize(isEcoMode() || isMobileMode() ? 120 : 60);
+        });
+        stageObserver.observe(els.stage);
+      }
       window.addEventListener('keydown', (event) => {
         if(event.key === 'Escape') closeModal();
       });
@@ -1337,5 +1331,5 @@
       window.setTimeout(openModal, 260);
     })();
   </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a15767d62d36ba86',t:'MTc4MzA5NzU5OA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
