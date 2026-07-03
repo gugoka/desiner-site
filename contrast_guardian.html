@@ -808,6 +808,25 @@
     body.eco-mode .settings-modal{
       background:#ffffff !important;
     }
+
+
+    /* Contrast Guardian: keep the top navigation crisp over the pure gradient hero area. */
+    .topbar{
+      background:rgba(255,255,255,.74) !important;
+      backdrop-filter:none !important;
+      -webkit-backdrop-filter:none !important;
+      box-shadow:0 10px 28px rgba(28,36,80,.14) !important;
+      transform:translateZ(0);
+      backface-visibility:hidden;
+      isolation:isolate;
+    }
+    .topbar .pill-btn,
+    .topbar .level-pill{
+      background:rgba(255,255,255,.62) !important;
+      backdrop-filter:none !important;
+      -webkit-backdrop-filter:none !important;
+      box-shadow:0 8px 18px rgba(28,36,80,.10) !important;
+    }
   </style>
 </head>
 <body>
@@ -1318,5 +1337,5 @@
       window.setTimeout(openModal, 260);
     })();
   </script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a15767d62d36ba86',t:'MTc4MzA5NzU5OA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
